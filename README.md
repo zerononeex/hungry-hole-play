@@ -1,5 +1,5 @@
-# Hungry Hole — Play
+# RETIRED
 
-Public play mirror for Hungry Hole. Do NOT build here and do NOT pick this repo in a Claude Code session.
+Hungry Hole is now ONE public repo — build and play both live at https://github.com/zerononeex/hungry-hole and the game will be at https://zerononeex.github.io/hungry-hole/
 
-Kakashi mirrors the verified `site/` build from the private dev repo (`zerononeex/hungry-hole`) into this repo. Once mirrored, the game is live at https://zerononeex.github.io/hungry-hole-play/
+Do not use this repo.
