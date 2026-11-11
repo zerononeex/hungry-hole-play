@@ -1,0 +1,907 @@
+# HUNGRY HOLE — Locked Spec v2 (2026-10-29, owner restructure applied)
+
+Family-only, not for sale. LANDSCAPE browser game for the kids (ages 8 and 7) on iPad
+Safari, and for the owner on his phone — played from a GitHub Pages site added to the
+Home Screen. Clean-room game built from scratch, inspired by hole-eats-and-grows games
+(Hole.io / All in Hole style) — the idea only, no copied assets, names, art, or code.
+
+Working title: **Hungry Hole**
+
+## Repo — ONE public repo, no mirroring (owner decision 2026-10-29)
+- PUBLIC, build and play in the same place: `zerononeex/hungry-hole` · `main`
+  → live at https://zerononeex.github.io/hungry-hole/
+- The game is a single `index.html` at the REPO ROOT (GitHub Pages serves `main` / root),
+  so merging a verified branch to main IS publishing. Builders work on a branch;
+  Kakashi verifies the branch BEFORE merge (merge = live, instantly).
+- `hungry-hole-play` is RETIRED — do not use it for anything.
+
+## Orientation (owner decision 2026-10-29)
+- LANDSCAPE. Logical stage 1280×720 (16:9), scaled to fit the screen (`contain`),
+  centred, black bars where the device ratio differs (phone landscape gets side bars;
+  the owner explicitly does not care — enjoying the game beats filling the screen).
+  Bars are plain black. This game's letterbox acceptance does NOT change any other
+  game's no-letterbox rule.
+- Test at 1180×820 (iPad landscape) and 844×390 (iPhone landscape).
+
+## Core loop (locked)
+- Top-down 2D. Drag anywhere — the hole follows the finger with smooth, slightly slidey
+  movement. Mouse works the same for desktop testing. No steering buttons.
+- The map is bigger than the screen (~1600×2400); the camera follows the hole.
+- Every object has a size tier. If the object's centre is over the hole AND its tier is
+  at or below the hole's current size level, it tips, spirals, shrinks and drops in
+  (~180 ms) with a gulp sound and points. If it is too big, it wobbles / bumps — no other
+  penalty except where a quest says so.
+- Eating grows the hole continuously. Size levels 1–6 (City uses 6; other worlds 5).
+  Eat-XP = the object's tier. Small (tier 1–2) objects respawn away from the hole to
+  keep growth always possible; quest collect/avoid items never respawn.
+- Score: tier 1 = 10, 2 = 20, 3 = 40, 4 = 80, 5 = 150, 6 = 300. Quest collect items +50 bonus each.
+- One pickup type in v1: **Magnet** — appears occasionally, pulls in all eatable objects
+  nearby for 8 seconds.
+- Round timer per level (below). Time out with the main goal unfinished = friendly fail
+  screen ("So close!"), Retry / Level Map, no lives, no penalty, progress never lost.
+
+## The level + side-quest system (locked — the heart of the game)
+Every level has:
+1. **ONE Main Goal** — finish it before the timer ends to WIN the level.
+2. **TWO Side Quests** — optional, shown live as checklist chips under the main goal.
+   They never fail the level. A lost side quest (e.g. an Avoid quest) just gets an ✗
+   for that run; the level plays on.
+3. **Stars:** 1★ for the main goal, +1★ if at least 1 side quest is done, +1★ if both
+   are done. Best stars + best score saved per level.
+
+Quest types the engine must support (data-driven, levels are config, not code):
+- `collect` — eat N of a specific item ("Eat 3 rubber ducks")
+- `avoid` — eat ZERO of a specific item for the whole run ("Don't eat any toy frogs")
+- `total` — eat N objects of any kind
+- `score` — reach N points
+- `combo` — eat N objects within 6 seconds
+- `reachSize` — reach size level N
+- `bigEat` — eat at least 1 of a specific big item
+- `speed` — finish the main goal with at least N seconds left (judged at the win moment)
+- `noBump` — bump into too-big objects no more than N times
+- `sequence` — eat a set of letter/number tiles IN EXACT ORDER (see Sequence Hunts below)
+
+Unlocks: next level unlocks when the previous level's MAIN goal is done. Next world
+unlocks when level 5's main goal of the previous world is done. Side quests are never
+required to unlock anything. Each unlocked world also gets a **Free Play** button:
+120 seconds, no goals, just eat everything and chase a high score.
+
+Quest fairness rules for level data: collect items spawn at least 2× the needed count;
+avoid items spawn 5–7, spread out, never blocking the only path to a quest item;
+every level must be completable by tier progression (test it in code, don't eyeball it).
+
+## Worlds and size ladders (locked)
+
+### World 1 — TOY CLEANUP (playroom floor, warm wood + rug)
+- T1: marble, die, crayon, brick, puzzle piece
+- T2: rubber duck, toy frog, toy car, block, small ball
+- T3: book, toy dinosaur, toy truck, small teddy, toy train
+- T4: big teddy, toy box, kids' chair, skateboard
+- T5: play table, bookshelf, toy kitchen
+
+### World 2 — SPACE HOLE (dark starfield)
+- T1: star, space rock, crystal
+- T2: asteroid, comet, satellite debris
+- T3: small moon, satellite, alien, rocket
+- T4: small planet, big UFO, space-station pod
+- T5: big planet, space station, the Sun (level 5 only)
+
+### World 3 — TREASURE HOLE (sunken pirate cove, sand + teal)
+- T1: coin, shell, pearl
+- T2: ruby, emerald, sapphire, gold nugget, crab, pufferfish, starfish
+- T3: gold bar, goblet, message bottle, small anchor
+- T4: treasure chest, crown, cannon, statue
+- T5: giant treasure chest, golden statue, big anchor
+
+### World 4 — CITY (streets + parks) — ladder in the owner's own order
+- T1: litter (cup, can, newspaper), garbage bag
+- T2: trash can, street lamp, traffic cone, fire hydrant
+- T3: person, bicycle, mailbox, big garbage bin (dumpster)
+- T4: car, pickup truck, bus
+- T5: house, semi truck, small building
+- T6: apartment building, office tower
+- People are cartoon pedestrians who fall in slapstick-style, no gore, and pop back
+  on the Free Play / next level as normal. Several City levels use them as Avoid items.
+
+## The 20 levels (locked)
+
+### Toy Cleanup — 90s, 90s, 105s, 105s, 120s
+1. **First Cleanup** — Main: eat 12 things. Side: eat 3 blocks · get a 4-in-a-row combo.
+2. **Duck, Duck… Frog!** — Main: eat 3 rubber ducks. Side: don't eat any toy frogs · eat 15 things.
+3. **Block Party** — Main: eat 15 blocks. Side: eat 3 toy cars · reach size 4.
+4. **Teddy Trouble** — Main: eat 2 big teddies. Side: don't eat any toy frogs · score 1,000.
+5. **The Big Cleanup** — Main: eat 1 play table. Side: eat 3 toy dinosaurs · finish with 20+ seconds left.
+
+### Space Hole — 90s, 90s, 105s, 105s, 120s
+1. **First Orbit** — Main: eat 12 things. Side: eat 3 stars · get a 4-in-a-row combo.
+2. **Comet Catcher** — Main: eat 4 comets. Side: don't eat any satellites · eat 20 things.
+3. **Moon Munch** — Main: eat 2 small moons. Side: eat 3 aliens · reach size 4.
+4. **Planet Snack** — Main: eat 2 small planets. Side: don't eat any UFOs · score 1,200.
+5. **Eat the Sun** — Main: eat 1 Sun. Side: eat 1 space station · finish with 20+ seconds left.
+
+### Treasure Hole — 90s, 90s, 105s, 105s, 120s
+1. **Coins, Coins, Coins** — Main: eat 15 coins. Side: eat 3 pearls · don't eat any crabs.
+2. **Ruby Rush** — Main: eat 4 rubies. Side: eat 20 things · don't eat any pufferfish.
+3. **Golden Goblets** — Main: eat 3 goblets. Side: eat 3 emeralds · reach size 4.
+4. **Chest Quest** — Main: eat 2 treasure chests. Side: don't eat any crabs · score 1,200.
+5. **The Giant Chest** — Main: eat 1 giant treasure chest. Side: eat 1 crown · finish with 20+ seconds left.
+
+### City — 90s, 90s, 105s, 105s, 120s
+1. **Street Sweeper** — Main: eat 12 things. Side: eat 4 garbage bags · don't eat any people.
+2. **Bin Day** — Main: eat 4 trash cans. Side: eat 3 street lamps · eat 20 things.
+3. **Rush Hour** — Main: eat 3 cars. Side: don't eat any people · get a 5-in-a-row combo.
+4. **Moving Day** — Main: eat 2 houses. Side: eat 2 buses · reach size 5.
+5. **Downtown** — Main: eat 1 office tower. Side: eat 2 houses · finish with 20+ seconds left.
+
+Total stars possible: 60.
+
+## Skins — REMOVED (owner decision 2026-10-29: "nah, don't do skins")
+No skins, no hole-skin picker, no star-unlocked cosmetics anywhere. The hole looks
+like the hole. (The cosmetic UPGRADES from the earlier Journey draft are also gone —
+all 10 upgrades below are functional.)
+
+## Screens / HUD (owner layout, 2026-10-29)
+- **Main screen:** the game's hole sits in the middle, slowly swirling (you SEE your
+  hole). On top: one big **START** (resumes where you left off / starts Chapter 1).
+  Below it exactly three buttons: **CHAPTERS**, **UPGRADES**, **SETTINGS**.
+  Settings also gets a small gear in the **bottom-right corner** — the "dashboard"
+  corner (same corner in-game: bottom-right holds pause/settings cluster).
+- **Chapters screen:** 7 chapter cards — name, your real-world size reached, checklist
+  progress, Tiny Quest board count (e.g. 23/40), chapter coin wallet, locked/unlocked.
+  Tapping a card RESUMES that chapter exactly where you left it (see Per-chapter state).
+- **Upgrades screen:** a grid of all 10 upgrades for the SELECTED chapter (chapter tabs
+  across the top). Each card: a clean **vector (SVG) icon**, name, 10 level pips,
+  next-level cost. **TAP** a card to select it: a detail panel shows what it does,
+  current effect, next-level effect, and a BUY button. **PRESS-AND-HOLD** a card:
+  a description pop-up appears while you hold (owner's exact interaction). A
+  **BANKER** button opens coin transfers between chapters (40% fee, see Economy).
+- **Settings (the dashboard):** Sound on/off · Voice (speech) on/off · Learning
+  Full/Sometimes/Off · Grade 2/Grade 3 · **Export Save** (download file + show a save
+  code) · **Import Save** (file or paste code, with confirm) · **Learning Report**
+  (quests completed by subject: math / spelling / science / geography counts) ·
+  Reset Chapter · Reset Everything (two-tap confirms).
+- **In game (landscape HUD):** top-left = chapter checklist pill + active Tiny Quest
+  chips (tick live); top-centre = points; top-right = chapter coins + size meter;
+  left edge = the **"How big am I?" scale readout** (real-world size, e.g. 40 cm →
+  3 m → 1 km — see Education); bottom-right = pause/settings cluster.
+  Pause menu: Resume, Restart Chapter Run (back to chapter-start size/position;
+  coins, upgrades and quest boards are KEPT), Save & Main Menu, Sound toggle.
+  Auto-pause when the tab is hidden. Journey chapters have no timer; see the levels
+  question in Structure Notes for timed play.
+
+## Art and sound (v1, locked)
+- Objects are large, clear emoji sprites with a soft drop shadow on the map — instantly
+  readable for kids, zero external assets, keeps the game one fast file. Each world has
+  a code-drawn canvas background in its theme (playroom floor/rug, starfield, cove sand,
+  city streets with roads/park blocks drawn as a simple grid the objects sit on).
+- The hole: black circle with a themed rim, subtle inner shadow / swirl, objects spiral
+  in as they're eaten. Too-big objects sit still (no fake wobble that implies they fit).
+- Sound: tiny WebAudio synth only (gulp/pop pitch rises with tier, ding on quest tick,
+  little fanfare on win, soft thud on bump). No audio files. Sound on/off in pause + home.
+- No emojis in menus/buttons as UI icons — text labels and simple shapes for UI;
+  emojis are the *game objects only*.
+
+## Tech rules (locked)
+- Single self-contained `index.html` **at the repo root** (inline CSS+JS, no build
+  step, no external requests). Works offline once loaded. Pages serves `main` / root.
+- Landscape stage 1280×720 scaled with `contain`; black bars are expected and fine
+  (owner). Test at 1180×820 (iPad landscape) and 844×390 (iPhone landscape).
+- Save: localStorage key **`hungry-hole-data-v1`** — never rename or change its shape
+  without a migration; all future additions are ADDITIVE fields. This origin
+  (zerononeex.github.io) is shared with other family apps: the game must never clear,
+  enumerate, or touch any other key. In-game Export/Import (Settings) is the backup
+  path — never advise clearing Safari website data for this app.
+  Save shape v2: settings (sound, voice, learning mode, grade) · per-chapter state
+  (see Per-chapter state: position, size progress, checklist, tiny-quest board,
+  wallet, upgrade levels, unlocked) · learning report counters · stars/levels data
+  if the levels structure survives (see Structure Notes).
+- Performance: chapters are HUGE (below) — render only the camera's neighbourhood
+  (spatial partitioning / chunked object lists), cap ACTIVE simulated objects,
+  canvas rendering, no per-frame DOM churn. 60fps target on iPad.
+- Discipline: minimal code (Ponytail), and every build ends with a cleanup pass
+  (dead code / duplicates removed, with search evidence) before reporting done.
+
+## Sequence Hunts — the educational bonus levels (added by owner 2026-10-29)
+One bonus "Hunt" level per world, shown as level 6 on the level map. It does NOT gate
+anything; it uses the same stars (so total stars become 60 + 12 = 72).
+A Hunt's main goal is a `sequence` quest: special letter/number tiles are scattered
+across the map and must be eaten **in exact order**.
+- Toy Cleanup Hunt: numbers **1 → 10** in order (owner's pick).
+- City Hunt: **E-A-R-T-H** in order (owner's pick).
+- Space Hunt: **P-L-A-N-E-T** in order.
+- Treasure Hunt: **G-O-L-D** in order.
+Mechanics (kind, no-fail design):
+- The HUD shows the whole sequence as a strip; found items tick off, the NEXT tile is
+  the only active one — it glows, pulses, and is the only tile that can fall in. All
+  other tiles are visible but inactive (they nudge/wobble if touched), so a wrong order
+  is impossible and there is never a punishment or reset.
+- Tiles are always eatable regardless of hole size (tier 0) — learning is never blocked
+  by growth. The rest of the map is a normal level, so they keep growing while hunting.
+- When a tile is eaten, the game SPEAKS it aloud via speech synthesis ("E!", "7!")
+  when available after the first tap (iPad Safari rule), with a happy pop + the letter
+  shown big briefly. Voice can be toggled off in Settings; the pop/ding is the fallback.
+- Each Hunt also carries 2 normal side quests (same types as regular levels).
+
+## Tiny Quests — 40 per world, rolling (added by owner 2026-10-29)
+"40 side quests per stage" (owner) is implemented as a **quest pool**, not 40 on screen:
+- Every world has a pool of **40 Tiny Quests** (data list in the level config).
+- During any level in that world, **up to 3 Tiny Quests are active at a time** under the
+  side-quest chips. The moment one is ticked, the next one rolls in with a little
+  "New quest!" pop — so a run is a constant stream of tiny wins.
+- A **Quest Board** per world (on the level map) shows all 40 with ticks for every one
+  ever completed across all runs — finishing a world's whole board earns a Board Badge
+  shown on the world card. Tiny Quest progress persists in the save.
+- Level side quests (the 2 per level, above) are separate and unchanged; Tiny Quests are
+  bonus-only, never required, never lost — an active one you don't finish just stays
+  unfinished, no ✗.
+Tiny Quest types reuse the quest engine plus three learning types:
+- `findAnswer` — a question tile floats at the top of the HUD ("7 × 5 = ?"); number
+  tiles are scattered on the map among close decoys (28, 34, 36, 40…). Eat the correct
+  answer (35) to tick it. Wrong-answer tiles are inactive like sequence tiles — they
+  shake and speak their number, they cannot be eaten and never punish. Questions are
+  Grade 2–3 level: × tables to 5×5 then 10×10, +/− to 100, "what's missing: 3, 6, __, 12".
+- `firstLetter` — "Eat something that starts with B" — any matching world object counts
+  (Toy: ball/block/book; City: bus/bike/bin; Space: …world lists in config).
+- `pattern` — eat objects in a shown pattern (red, blue, red, blue…) using the world's
+  colour-varied objects; teaches patterns, the seed of coding loops/sequences.
+Pool mix per world (40): ~18 world-flavoured eat/collect/avoid/combo quests,
+~8 findAnswer math, ~6 spelling/letter (firstLetter, vowel hunt A-E-I-O-U order,
+missing-letter word), ~4 pattern/if-then, ~4 reach-size/score stretch quests.
+Difficulty of math/letter quests is a Settings choice: **Grade 2 or Grade 3** (one
+toggle, default Grade 2), because the players are in Grades 2 and 3.
+
+## "THE BIG JOURNEY" — the 7 chapters (design locked 2026-10-29)
+The game's backbone: one epic, slow journey from a single Lego brick to becoming a
+black hole. What changes per chapter is the object set, the size scale, and the
+camera zoom (each chapter transition plays a "ZOOMING OUT…" moment and the world
+visibly rescales).
+
+- **Structure:** 7 chapters (owner revised 2026-10-29 — NOT 12; fewer, bigger chapters).
+  There is NO fail timer in chapters — this is a long, savable trek, not a race. Each
+  chapter has a **3-item checklist** (like side quests, but these ARE the chapter goal:
+  specific must-eats). Eating anything grows you as usual; finishing all 3 checklist
+  items completes the chapter and unlocks the next. Each chapter also has its own
+  Tiny Quest board (the 40-quest replay system) — the owner's replay point: finish
+  the Bedroom chapter, go back later, and tick off everything you didn't finish.
+  Chapters 2–5 each START SMALL AGAIN relative to their new scale (the zoom-out
+  makes you the little guy in a bigger world) — that reset-and-regrow rhythm is the
+  mode's heartbeat.
+- **Per-chapter state, wallets, per-chapter upgrades and the 40% Banker** are defined
+  in their own section below — chapters are resumable at any time from the Chapters
+  screen; there is no "run" that can be lost. Coins are earned live (physical coins,
+  points ÷ 10, quest bonuses) — no end-of-run banking step.
+
+## Structure Notes — SETTLED (2026-10-29)
+(A) WON: the game IS the 7 chapters. Toy/Space/Treasure/City level content folds
+into chapters and Tiny Quest pools (Space = Ch 6–7, Treasure = a sunken-cove zone
+in Ch 4 with the G-O-L-D sequence, Toy = Ch 1, City = Ch 3 Metro Vancouver).
+The 20 timed levels remain in this spec's history sections only — do not build them.
+BUILD = ONE single mega-prompt (owner, 2026-10-29: "I want one prompt… it could
+run for 24 hours, I don't care"). No phase split. The builder works through the
+whole spec in order inside one session/branch, committing in chunks, and the
+internal build order (engine → menus → chapters 1→7 → polish) is sequencing
+inside that one job, not separate prompts.
+- **Water ruling (owner, hedged — Kakashi's clean call, flagged to him):** water itself
+  is NEVER eaten — not the river, not the ocean. The dam counts as an object; boats,
+  whales and islands do the growing in the wet chapters. "Too much" was his instinct
+  and it is right: eating an ocean breaks the size fantasy.
+
+### The 7 chapters (owner's revised route, 2026-10-29, in his order)
+1. **The Bedroom** — Checklist: eat 25 Lego bricks · eat 10 toy soldiers · eat 1 bed.
+   Ladder: Lego brick/marble/die → toy soldiers → toy car → toy truck → Nerf gun →
+   chair → desk → bed. Then ZOOM OUT.
+2. **Backyard & the Neighbourhood** — Checklist: eat 1 backyard tree · eat 1 family
+   car · eat 3 houses on the street. Ladder: garden things/shoes/plants → BBQ/dog
+   house → the backyard tree → the car → bikes/bins/people → trucks → houses.
+   Then ZOOM OUT.
+3. **METRO VANCOUVER** (owner, 2026-10-29: "if you're going to build Vancouver,
+   build it properly — I'll be sharing this with people who live here"). This chapter
+   is the REAL Lower Mainland with real names and ROUGHLY REAL relative positions
+   (locals will play it — Richmond must be south of Vancouver, the North Shore must
+   be across the inlet; perfect cartography not required, wrong-side-of-the-river
+   IS a bug). **The map stops at the border — nothing south of the US border exists
+   in this chapter** (White Rock sits right at the southern edge, with a funny
+   border fence + sign at the map's bottom edge: end of the world, eh).
+   The municipalities, placed properly relative to each other:
+   - **Vancouver** (centre-west): Downtown (manhole-cover ladder below, office
+     towers, SkyTrain trains running on elevated tracks — eatable when huge),
+     Stanley Park on its NW peninsula (giant trees, seawall, bikes, totem poles),
+     beaches on English Bay, neighbourhoods of houses everywhere else.
+   - **Richmond** (south of Vancouver, across the Fraser's north arm, on its own
+     flat island): farmland + suburbs, and on Sea Island **YVR AIRPORT** — luggage
+     carts → food trucks → parked airplanes, a whole airplane is a top-tier eat.
+   - **Burnaby** (east of Vancouver): Metrotown mall (a giant mall building),
+     Deer Lake, SFU up on Burnaby Mountain.
+   - **New Westminster** (SE of Burnaby, on the Fraser): the Quay, old buildings.
+   - **Tri-Cities** (NE): Port Moody (inlet shore), Coquitlam, Port Coquitlam —
+     houses, rivers, mountains at their backs.
+   - **Pitt Meadows** (east, across the Pitt River): farms, barns, the airport's
+     little sibling airfield.
+   - **Surrey** (south of the Fraser, big): endless houses, farms to the east.
+   - **Delta** (SW, between the river and the bay): farms, and **Tsawwassen** with
+     BC Ferries at the terminal — a whole ferry is a top-tier eat.
+   - **White Rock** (far south on the coast, at the border): the long pier, and
+     **THE White Rock itself** — the famous white boulder on the beach, labelled.
+   - **Langley** (east of Surrey): farms + **Fort Langley**, the little historic fort.
+   - **The North Shore** (across Burrard Inlet by the Lions Gate Bridge): West
+     Vancouver (fancy homes on the slope), North Vancouver, **Grouse Mountain**
+     (the Skyride gondola going up and down, the two famous grizzly bears in their
+     habitat, the peak chalet), **Capilano Suspension Bridge** (wobbling over the
+     canyon — crossable!), and **Deep Cove** at the east end of the inlet (kayaks,
+     the little village, Indian Arm reaching north as pure scenery water).
+   Travel = bridges and highways, all crossable and labelled: Lions Gate (to the
+   North Shore), Oak St / Arthur Laing (to Richmond/the airport), Ironworkers
+   Memorial (to the North Shore east side), Port Mann (to Surrey), Pattullo
+   (New West ↔ Surrey), Golden Ears (to Pitt Meadows/Maple Ridge edge), Highway 1
+   running the whole map east–west with streaming traffic, Highway 99 south.
+   Chapter ladder (region-wide): manhole covers/drains (the city's own little
+   holes!), lampposts, cones, hydrants → people/bins/bikes → cars/buses/SkyTrain
+   cars → trucks/houses → small buildings → office buildings, mall, airplanes,
+   ferries → (final, biggest) Grouse Mountain's peak lodge area.
+   Checklist: eat 10 manhole covers (Downtown) · eat 1 airplane at YVR · eat THE
+   White Rock in White Rock. Then ZOOM OUT.
+   (The earlier fictional Downtown → Snowpeak Town route is NOT deleted: Highway 1
+   east out of the map is the road to the Wilderness chapter's mountains/snow —
+   Snowpeak energy lives in Ch 4's mountain zone and Ch 2's highway east exit
+   signposts it.)
+4. **The Wilderness** — you start SMALL AGAIN, out in the wild. One big roaming chapter
+   with zones: forest (trees, deer, bears, CAMPERS with tents and campfires), beach
+   (crabs, shells, beach umbrellas), savannah (zebras, lions, acacia trees), DESERT
+   past the beach (dunes, cacti, camels, an oasis), rivers (fish — the water is
+   scenery), mountains (pines up the edges, boulders, goats, hawks overhead), the
+   shore and shallow ocean (coral reefs, turtles, sharks), and a dam on the river.
+   Exact layout is invented — kids don't need real geography here either.
+   Checklist: eat 40 trees · eat 10 whales out in the ocean · eat 1 dam.
+5. **World Tour** — now big enough for whole buildings, high-rises and construction
+   sites, and the map is THE GLOBE: a wrap-around world (leaving the top brings you in
+   at the bottom, east wraps to west — a circle, not a flat rectangle; a mini globe
+   tracker shows where you've been).
+   **ACCURACY RULE (owner, educational, non-negotiable here): this map must match the
+   real Earth.** Continents in their real shapes/positions, every landmark IN its
+   real country, every famous city in its real place. The kids are learning where
+   things ARE: the Pyramids are in Egypt by the Nile, the Mayan pyramids are in
+   Mexico, the Eiffel Tower is in Paris. If a placement is wrong, it's a bug.
+   **Landmarks are the stars** — drawn big and labelled (name + city + country,
+   spoken when eaten): Eiffel Tower (Paris, France), Colosseum (Rome, Italy),
+   Great Wall (China), Taj Mahal (India), Pyramids of Giza + the Nile River
+   (Egypt), Statue of Liberty (New York, USA), Big Ben (London, England),
+   Sydney Opera House (Australia), Christ the Redeemer (Rio, Brazil),
+   Chichen Itza (Mexico), Mount Fuji (Japan), Marina Bay (Singapore), Petra
+   (Jordan), Machu Picchu (Peru), St. Basil's (Moscow, Russia), Table Mountain
+   (Cape Town, South Africa).
+   **CITIES TO VISIT** (each a real-place cluster of buildings + local flavour):
+   Paris, Rome, London, Moscow, Cairo, Lagos (Nigeria), Cape Town, Singapore,
+   Tokyo, Hanoi (Vietnam), Mexico City, Havana (Cuba), Buenos Aires (Argentina),
+   Rio, New York, Sydney — and more if the map wants them.
+   Chapter special: the **PASSPORT board** — visiting (eating anything in) a country
+   stamps it in the chapter's passport page; ~20 countries to collect.
+   Checklist (the headline mission): **collect the 7 World Wonders** (Great Wall,
+   Colosseum, Taj Mahal, Chichen Itza, Christ the Redeemer, Petra, Machu Picchu —
+   each ticks off with its name and country spoken/shown) · stamp 10 passport
+   countries · eat 1 whole island. As the chapter ends you have eaten most of
+   Earth: finish with the last mountains — then **THE MOON**: a special slow
+   animation, the Moon tips, wobbles, and spirals in. Chapter complete.
+6. **Space — OUR solar system first, done properly, on a HUGE map** (owner,
+   2026-10-29). The map is enormous and packed — space is easy to repeat, so fill it:
+   satellites and space stations around Earth, debris fields, comets, meteors,
+   wandering UFOs, alien outposts, ice rocks — go everywhere, it's super fun.
+   **ACCURACY RULE (educational, same as World Tour): the solar system itself must
+   be correct** — the Sun, then the **8 planets in their real order** (Mercury,
+   Venus, Earth + its Moon, Mars, Jupiter, Saturn with its rings, Uranus, Neptune),
+   and the **asteroid belt in its real place, between Mars and Jupiter** (labelled).
+   Pluto sits far out as a bonus, labelled "dwarf planet". Sizes/distances are
+   play-scale (real scale is impossible), but ORDER and the belt's location are
+   facts, not decoration. The planets-in-order sequence quest (spoken aloud) is
+   this chapter's headline. Checklist: planets in order · eat 20 asteroids from
+   the belt · eat 1 Sun. Eating THE SUN ends the chapter…
+7. **The Humbling (Final)** — …and ZOOM OUT reveals you are still small. **From here
+   the accuracy rules END: outside our solar system, space is completely fictional**
+   (owner) — invent freely. Bigger
+   planets, giant moons, a giant UFO, a ringed mega space-station and laser-moon
+   (generic sci-fi, no film IP), BIGGER suns and giant stars. Education scales up
+   with you: find-the-answer quests with big numbers (48 × 5), count-the-stars
+   sequences, spell G-A-L-A-X-Y. Checklist: eat 2 giant stars · eat 1 giant UFO ·
+   spell GALAXY. Finale: the two giant stars you've been circling get pulled in
+   together — star + star collide into the hole — full-screen swirl cinematic:
+   **"YOU ARE THE BLACK HOLE"** — everything spirals in, credits, +5,000 coins,
+   Journey marked COMPLETE (re-runnable forever for coins and unfinished boards).
+
+## Per-chapter state, economy, and the Banker (owner, 2026-10-29 — Slingshot rules)
+- **Every chapter is its own little save.** Per chapter the game remembers: hole
+  position, size progress, checklist progress, Tiny Quest board ticks, coin wallet,
+  and upgrade levels. You can leave the Backyard mid-run, go back to the Bedroom and
+  do more side quests, and later RESUME the Backyard exactly where you were
+  (owner's exact scenario). Ordinary eaten objects respawn between visits so a
+  chapter can never be emptied; checklist/quest/landmark items persist until eaten.
+- **Coins come from three places:** (1) physical coins scattered everywhere in every
+  chapter — just eat them; (2) points convert to coins continuously (every 10 points
+  = 1 coin, paid live into the chapter wallet); (3) bonus coins for every checklist
+  item and Tiny Quest completed in that chapter.
+- **Chapter wallets are separate** (like Slingshot Plane worlds). **THE BANKER:**
+  from the Upgrades screen you can transfer coins from one chapter's wallet to
+  another — the Banker takes a **40% fee** (send 100, 60 arrive), shown before you
+  confirm, with the Banker character (top hat, coin bag) doing his little animation.
+- **Upgrades are PER CHAPTER** (the big balance ruling): maxing an upgrade helps only
+  that chapter; a new chapter starts all upgrades at level 0 for that chapter. This
+  is deliberate — every chapter gets its own from-zero climb.
+
+### The 10 Upgrades (per chapter, EVERY one goes to level 10)
+Each has a vector (SVG) icon, tap-to-select with detail + BUY panel, press-and-hold
+for the description pop-up. Effect steps are smooth across 10 levels; cost of level
+n = base × growth^(n−1) × chapter number multiplier, tuned so a thorough chapter
+playthrough can max roughly 2–3 upgrades. (Builder playtest-tunes exact numbers;
+the CAPS below are locked.)
+1. **Speed** — +3% move speed / lvl (max +30%)
+2. **Growth Boost** — growth multiplier climbing to **×2.0 at lvl 10** (owner's
+   1.1→2.0 ladder stretched over 10 steps; ×2.0 only at the top)
+3. **Points Boost** — points multiplier climbing to **×2.0 at lvl 10**
+4. **Coin Boost** — +6% coins earned / lvl (max +60%)
+5. **Magnet Aura** — always-on pull radius +12% / lvl
+6. **Vacuum Reach** — eat capture radius +3% / lvl (things fall in a touch earlier)
+7. **Lucky Coins** — +2% chance an eaten object also drops a bonus coin / lvl
+8. **Quest Payday** — +10% coins from checklist + Tiny Quest completions / lvl
+9. **Wide Eyes** — camera view +2.5% / lvl (you see more of these huge maps)
+10. **Head Start** — +2% of the first size stage pre-grown per lvl at chapter start
+
+## Huge chapter maps (owner, 2026-10-29 — chapters are PLACES, not arenas)
+- **Ch 1 The Bedroom is really THE HOUSE.** Start in the kids' bedroom. While tiny you
+  slip UNDER the door into the hallway: two more bedrooms, Mom & Dad's office,
+  Mom & Dad's bedroom ("not as exciting" — it's got the big furniture though), then
+  DOWN THE STAIRS to the open-concept living room + kitchen, and finally sneak out
+  the back door — stepping into the backyard is the chapter's end trigger.
+  Interior walls are real: rooms connect only through doors (under-door gap works
+  only while small; once big, you eat the door). Stairs are a one-way slide down.
+- **Ch 2 is a 4 × 4-block neighbourhood.** 16 blocks, each block = **2 rows of
+  10 houses (20 per block, 320 houses)**, every house with a backyard you can get
+  into, streets between all blocks, and a PARK one block away (playground, pond,
+  big trees). Content is placed by seeded generation from layout rules (not random
+  soup, not hand-placing 320 houses): every yard/street/park is full of stuff + coins.
+- **Ch 3 City, Ch 4 Wilderness, Ch 5 World Tour, Ch 6–7 Space** scale the same way:
+  districts / zones / a wrap-around globe / star fields — each chapter map is many
+  screens across, with the Quest Compass (baseline UI: a small edge arrow to the
+  nearest checklist item, always on) making big maps friendly.
+
+## Education layer (owner's direction + Kakashi's ideas, presented 2026-10-29)
+Core rule: education rides INSIDE the eating (Tiny Quests, Hunts, checklists) —
+the game never stops to quiz. Settings: Learning Full/Sometimes/Off + Grade 2/3.
+Already locked above: Sequence Hunts, findAnswer math, firstLetter, pattern quests.
+Kakashi's additional ideas (presented, pending owner's pick — do not build unpicked):
+- **"How big am I?" scale readout** (in HUD above): the hole's real-world size,
+  climbing cm → m → km → island → Moon → Earth sizes. ★ top pick
+- **Name flash on every eat**: the eaten object's name appears briefly (sight words).
+- **Coins with values** (1/5/10/25¢) + "eat exactly 50¢" money quests.
+- **Multiplication you can see**: soldiers in rows — "eat 4 rows of 5".
+- **Estimation quests**: "eat ABOUT 20 things" (17–23 ticks it).
+- **Food-chain sequences** (grass → grasshopper → frog → snake) and **habitat quests**
+  in the Wilderness zones; **moon phases in order** in Ch 7.
+- **Geography**: landmark eats flash country + one-line fact; compass quests
+  ("north of the park"); French word tiles in the Paris zone.
+- **Rhyme / opposite / syllable quests** (el-e-phant = 3 tiles in order).
+- **Learning Report** on the Settings dashboard (counts by subject) — included in
+  the Settings spec above.
+
+## Verification the builder must run before saying done
+- Serve the root `index.html` over http; zero console errors.
+- Data test: every chapter/level loads; collect items spawn ≥2× need, avoid items
+  present 5–7 when an avoid quest exists, checklist/main goal is tier-reachable.
+- Play test (automated drag or scripted): eat → grow → size up; collect quest ticks;
+  avoid quest fails on eating one but play continues; combo quest ticks; per-chapter
+  resume restores position/size/wallet/upgrades; Banker transfer moves 60% and keeps
+  40%; save export → import round-trips; save survives reload.
+- Screenshots: main screen, chapters, upgrades (with hold pop-up), one scene per
+  chapter — LANDSCAPE iPad size (1180×820) and iPhone landscape (844×390).
+
+## App icon (owner pick, 2026-10-29)
+Icon #1 "Galaxy Swirl" (purple/blue galaxy swirl around the black hole), chosen by the owner from 10 generated options. `icon-512.png` + `apple-touch-icon.png` sit at the repo root (full-bleed crops). Kakashi wires the two link tags into `index.html` at merge/publish time. All 10 options are kept in the workspace (`workspace/hungry-hole/icons/`) if the kids outvote it later.
+
+---
+
+# SPEC v3 ADDENDUM — 3D REVAMP + PACE RETUNE (owner playtest, 2026-10-30)
+
+Owner verdict on v2: foundation good, feels boring — stages too big, everything flat.
+This addendum SUPERSEDES v2 where they conflict. Everything not mentioned (chapters,
+checklists except the target trims below, per-chapter state, 40 Tiny Quests per chapter,
+upgrades, the Banker, education layer, settings, save key `hungry-hole-data-v1`) stays
+exactly as built. Existing v2 saves MUST keep working (same key, additive fields only).
+
+## Pace targets (hard)
+- A kid finishes a chapter CHECKLIST in at most ~5 minutes. Proxy gate: the balance bot
+  (near-perfect play) must finish each chapter's checklist in **<= 2.5 sim-minutes**
+  (3.0 acceptable for Ch 5 and Ch 6), and the hand-off must print the per-chapter times.
+- How: growth need roughly x0.35 of v2 (tune until the gate passes), more XP per eat,
+  hole base speed +20%, slightly larger starting size.
+- Checklist target trims: Ch1 Lego 25 -> 12, toy soldiers 10 -> 6 (bed stays the finale);
+  Ch4 trees 40 -> 15, whales 10 -> 6 (dam stays); Ch5 passport stamps 10 -> 6 (the 7
+  Wonders stay 7); Ch6 asteroid-belt items 20 -> 10. All other checklist items unchanged.
+- Smaller worlds: Ch2 houses ~320 -> ~120 (compress the block grid); Ch3 keeps EVERY
+  named place in its real relative position but map distances x0.6; Ch4 zones move
+  closer together; other chapters trim dead travel distance. Density of things to eat
+  near the hole goes UP even as maps shrink.
+
+## 3D renderer (the revamp)
+- True 3D with Three.js, VENDORED in the repo as `three.min.js` (pinned UMD build,
+  global THREE, no CDN — the site must work offline after first load). The game becomes
+  index.html + three.min.js at the repo root (+ existing icons). No other new files
+  except tests/screenshots/docs as before.
+- Camera: fixed-tilt perspective (~55 degrees, Hole.io-style), follows the hole, zoom
+  scales smoothly with hole size. Landscape stage rules from v2 still apply.
+- Ground: real ground plane per chapter, coloured/textured by zone with simple
+  procedural canvas textures (roads, sand, grass, water as scenery — water still never
+  eaten). Where the hole passes, the ground must read as GONE under objects (see physics).
+- The hole in 3D: a shallow dark pit — inner wall shading, a slowly swirling dark disc,
+  a soft rim shadow ring, a subtle pulse when something is swallowed. It must read as a
+  hole in the world, not a flat circle.
+
+## Model library (procedural low-poly, built in code — zero image assets)
+- Every eatable/scenery object type (~300 across chapters) gets a model built from
+  primitives (box, cylinder, cone, sphere, prism) with flat-shaded materials and a
+  simple palette — plain, clean, a little chunky. Aim ~70 shared recipes with variants
+  (car family: sedan / truck / van / sports; tree family; tower family; house family…)
+  rather than 300 one-offs.
+- Every type declares: footprint (w x d), height, palette, recipe. Heights are REAL:
+  sedans < vans < trucks < houses < towers; skyscrapers loom over the camera view;
+  mountains (Grouse, Fuji, the Rockies) are genuinely enormous — they fill the screen
+  and can only be eaten late in their chapter. This scale drama is the point.
+- People/animals: simple capsule-and-sphere figures are fine (emoji are retired from
+  the game world). Letter/number/answer tiles become chunky 3D tiles whose face text
+  is a small canvas texture. Landmark name plates stay (projected labels or billboard
+  sprites with canvas text).
+- Performance: instancing or merged geometry for repeated scenery, visible-object
+  culling by camera chunk as in v2, pixelRatio capped, NO dynamic shadow maps (blob
+  shadows under objects + flat hemisphere/directional lighting). Target: steady 60 fps
+  on a school iPad; the hand-off reports a perf measurement (fps in the busiest chapter
+  scene the bot can find).
+
+## Topple physics (capture is earned, not automatic)
+- Each object tracks support: how much of its footprint still has ground (the hole
+  removes ground). As support drops it LEANS toward the hole centre (tall things lean
+  more dramatically), creaks/wobbles, and may slide toward the rim.
+- Capture rule: an object falls in only if it FITS — its fit-width <= hole diameter.
+  Falling = tip over the rim, sink below the ground plane, spin + shrink into the hole
+  (the v2 eat effects carry over). Greedy shortcutting by tier alone is gone.
+- Too big: it leans to a rest angle against the rim and stays (still counts as not
+  eaten; bump feedback from v2 applies). It can be eaten later once the hole is bigger.
+- WOBBLE RULE (owner's pick, "make it fun for kids"): if the hole is at >= 85% of the
+  size an object needs, each solid bump on a leaning object adds wobble; enough wobble
+  tips it in early. Under 85% it never falls, no matter how much you bump.
+- Movers (people, animals, vehicles that drive) keep their v2 behaviour, plus leaning
+  when their ground goes. Cinematic moments (Moon tip-in, Ch7 finale) reuse the same
+  topple system with scripted parameters.
+- The Sun stays locked until all 8 planets are eaten; stairs/bed gating, door rules,
+  totem poles as scenery, Crystal Moon — all v2 DECISIONS.md rulings carry over.
+
+## Verification (same bar as v2, adapted)
+- Data tests unchanged: 7 chapters, exactly 40 quests each, all referenced types exist.
+  Every type must now also resolve to a model recipe + footprint + height.
+- Behaviour tests adapted to the new physics: fits -> falls in; too big -> leans and
+  rests, not eaten; wobble-in works at >= 85% and never below; Banker 60%; per-chapter
+  resume; export/import byte-equal; other localStorage keys untouched; save survives
+  reload; a v2-shaped save loads fine.
+- Balance bot prints per-chapter checklist completion minutes and must meet the pace
+  gate above.
+- Screenshots: main screen + all 7 chapters + phone sizes, eyeball-checked for height
+  and scale (a tower shot and a mountain shot must show real looming size).
+- Cleanup pass at the end (delete dead 2D rendering code — no dual renderers), and
+  append the v3 section to docs/DECISIONS.md for every judgment call.
+
+## v3.1 controls note (owner playtest, 2026-10-30 — supersedes the v2/v3 touch scheme)
+The move-toward-your-finger control is REPLACED by a floating joystick: touch anywhere
+on the play area and a joystick base appears under your finger; drag to steer (direction
++ amount = direction + speed of the hole); release and it disappears and the hole glides
+to a stop. Where you touched must not matter — only the drag vector does. Touches that
+start on DOM buttons/menus never spawn it. Screen-up must move the hole straight up the
+screen at the same visual speed as sideways (tilt-compensated). One control scheme only:
+the old move-to-point behaviour is deleted, not kept as an option.
+
+# SPEC v4 ADDENDUM — OWNER FEEDBACK BATCH (22 items, 2026-10-30)
+
+This addendum supersedes v2/v3/v3.1 wherever they conflict. Everything below is an owner ruling from the v3 playtest unless marked as a Kakashi judgment call (those are flagged in DECISIONS.md at build time if the build proves one unworkable — never silently changed).
+
+## A. Controls & flow
+1. **Floating joystick** — implement the v3.1 controls note in full (it is part of this build; the separate v3.1 prompt is superseded).
+2. **No zoom-out transitions anywhere** — chapter end OR chapter entry. Chapter complete → celebration card → **MAIN MENU**. Entering a chapter starts directly in the world. (The in-game camera pull-back as the hole grows is NOT a transition and stays.)
+3. **Upgrades mid-run** — an UPGRADES button on the in-game HUD (the main-menu one stays). Opening it pauses the run; closing returns to the exact run state.
+4. **Quest Board** — solid OPAQUE panel (like the Upgrades screen), in-game HUD hidden while it is open, compact grid: all 40 quests visible, tight rows and gaps.
+
+## B. Challenge & progression
+5. **Chapter gate = REACH THE CHAPTER'S TARGET SIZE** (its final size tier). Reaching it completes the chapter and unlocks the next; celebration → main menu (A2).
+6. **The 3-item checklist no longer gates anything.** It stays as an optional bonus layer (coins + completion marks). Passport stamps (Ch5) stay as collectibles. Tiny Quests stay 40 per chapter — optional coin income.
+7. **Slower growth, real challenge.** v3's growth need (×0.20 of v2) was too fast — the owner balloons in size and upgrades never matter. Retune so a chapter's size journey takes a kid roughly **8–15 minutes of honest play** (balance-bot time-to-target-size reported per chapter; sanity window, tune until inside it). NO fail states anywhere (standing rule): challenge comes from journey length and scarcer food, never punishment.
+8. **Upgrades must matter.** Strengthen effects so a maxed upgrade is unmistakable (esp. Growth, Speed, Magnet Aura, Vacuum Reach). Coin income drops with the density cut (C11) — rebalance prices so a chapter's upgrades are earnable across its full journey + quests, not in the first minute.
+
+## C. World generation — scale, placement, density (ALL chapters)
+9. **Real relative scale** — one metre table for the whole game (per-type real heights/footprints): a person ≈1.7 m tall, a street tree 6–12 m, a car ≈4.4 m long. A person is never bigger than a tree.
+10. **Logical placement, never uniform random scatter** — cars on roads, people on sidewalks/paths, trees lining sidewalks and streets, about one fire hydrant per two blocks, room-appropriate contents indoors (the toaster and the fridge are in the kitchen), biome-appropriate clusters outdoors.
+11. **Density cut** — loose filler scatter reduced by roughly two-thirds to three-quarters vs v3, in every chapter. Placed/authored items carry the world. Coin scatter is reduced with it (see B8).
+
+## D. Map edges
+12. Past every playable boundary the **same world continues visually** — desert stays desert south of the desert; outside the house you see its exterior, yard and street. You just can't go there. **No "edge of the map" messages.** A faint transparent fence is allowed where a boundary would otherwise be invisible — subtle, builder's call per chapter.
+
+## E. Chapter changes
+13. **Ch1 THE HOUSE — one floor, TWENTY rooms.** Stairs and the multi-floor layout are GONE. 20 distinct named rooms, each with room-appropriate contents (C10). The back door still leads to the family's backyard (chapter flavour); completion is by size (B5).
+14. **Ch2 — FIVE BY FIVE blocks** (25 blocks). Houses as placed rows along streets (fewer per block than v2 — density rule C11), every backyard enterable, the park stays. The hero house's own backyard is BIGGER than in v3, fenced on its property lines (fences are scenery, eatable at size, as before).
+15. **Ch3 METRO VANCOUVER — new boundaries** (supersede v2/v3 geography): SOUTH stops at the border — Richmond, YVR, Delta, Surrey, White Rock; nothing south of it. All of Vancouver incl. Downtown + Stanley Park. North Shore: West Van, North Van, Grouse Mountain, **Cypress Mountain (new)**. NORTH up the Sea-to-Sky through Squamish to **Whistler (northern stop)**. EAST: Burnaby + SFU, New Westminster, Port Moody, Coquitlam, Port Coquitlam, **Golden Ears Bridge (new)**, **Pitt Meadows = far east. LANGLEY IS OUT.** Highway 1 + the SkyTrain lines stay. Real names + roughly real relative positions (standing rule). The checklist (10 manholes · airplane at YVR · THE White Rock) is unchanged as a bonus layer.
+16. **Ch4 THE WILDERNESS — one map, a biome journey:** FOREST → GREENLANDS → DESERT → OCEAN → ANTARCTIC ICE. Campers, RVs, igloos (ice zone), many animal types per biome, ocean animals in the water. Start **ant-scale** — ants and tiny insects are the first foods. The dam stays as a landmark on a river in the green stretch; whales stay in the ocean.
+17. **Ch5 WORLD TOUR — the globe stays** (wrap-around world); keep and polish the mini-globe tracker.
+18. **Ch6 SPACE — add the ISS and a Mars rover** as real items (real human space stuff belongs to the real solar system). Ch7's fictional pools must NOT use them.
+
+## F. Doors & reachability (owner-found bugs)
+19. **Doors obey the fit rule.** A door is eatable only when the hole genuinely fits it — the same fit/wobble rules as every object, no support-loss shortcut. A tiny hole still slides UNDER a closed door (standing rule). Between under-gap size and door-fit size the door blocks — therefore every room/area must contain enough food to grow to its exit's requirement. Encode as data tests: per-room growth sufficiency + full-map reachability at max size, every chapter.
+20. **Reachability audit.** In v3 the owner could not reach the left part of the Ch1 map at max size. An automated reachability test across every chapter's layout at max hole size must pass; fix whatever it finds.
+
+## G. Education layer fix
+21. **Find-the-answer: the correct tile looks IDENTICAL to the decoys** — no glow or highlight on the right answer. Wrong picks keep shake + speak (never punitive). (Sequence hunts keep their next-tile glow — a deliberate scaffold, unchanged.)
+
+## H. New modes — the menu offers STORY / I SPY / EDUCATIONAL
+22. **I SPY** — pick any chapter unlocked in Story. Fresh run at starting size; the chapter's upgrades apply. **Five targets per run**, drawn from the chapter's I Spy pool and PLACED in the world (special spawns allowed and expected: a DINOSAUR in Ch4, a HAT placeable in any chapter, Ch3 targets from real landmarks/neighbourhoods — e.g. Chinatown — plus everyday items). Target cards (picture + name, spoken aloud) tick off as eaten; a too-big target must be grown into. All five → win card + a coin bonus into that chapter's wallet. Replay re-rolls five new targets. Targets must be reachable and eatable at the chapter's max size (data test).
+23. **EDUCATIONAL** — ALL chapters unlocked always; upgrades apply; fresh run at starting size. Curriculum target sets per chapter: Ch5 GEOGRAPHY ("find France" — completed by eating the named country's landmark/flag object; "I spy the Egyptian pyramids"); Ch1 HOUSE KNOWLEDGE (fetch lists of three — "a toaster, a fridge, and a bunk bed"); Ch6 PLANETS ("absorb Jupiter") + the ISS/rover; Ch2 FETCH + COLOURS ("get the YELLOW fire extinguisher" — recoloured variants spawn for the task). **MATH RULE: number/answer targets only ever spawn inside the player's current district/biome — never across the map.** HELP: quest menu → "Help me find it" → a persistent arrow at the screen edge points to the current target UNTIL it is eaten (owner's call: the arrow never fades). Targets are spoken aloud (existing speech). Completing a set → celebration + the next set is offered.
+
+## I. Upgrades screen art
+24. **The 10 upgrade icons become 3D** — small low-poly models from the same recipe system and materials as the game world (bolt, expanding arrows, star, coin, magnet, funnel, clover + coins, clipboard, eye, flag), rendered ONCE to textures at load (performance) and shown in the cards. The flat SVG icons are deleted.
+
+## J. Audio — STEP 0 of the build (the owner generates the tracks himself)
+25. **Before any game code**: write ALL music + needed-SFX generation prompts to `docs/AUDIO_PROMPTS.md` AND print them in the session output. Music: Pixar-like, instrumental, NO vocals/lyrics, seamless loops, ~2–3 minutes each — a menu theme (warm, whimsical, upbeat) + one per chapter: Ch1 homey/cosy, Ch2 sunny suburban cheer, Ch3 bright city adventure, Ch4 soft peaceful nature, Ch5 globe-trotting adventure, Ch6 space (long strings, slow wonder), Ch7 grand cosmic awe (kid-friendly). Each prompt carries: generator-ready style text, instruments, tempo/energy, the loop instruction, and negatives (no vocals, no sudden loud hits). SFX prompts ONLY for new sounds the new features need (the owner approved the existing synth SFX): I Spy target-found fanfare, I Spy win jingle, Educational correct chime, help-arrow ping, target-size-reached celebration.
+26. **Wiring**: the game loads `audio/menu.mp3`, `audio/ch1.mp3` … `audio/ch7.mp3` (plus the named SFX files) IF PRESENT and loops them per screen/chapter; with files absent the game runs silent-but-complete, no errors. Add a MUSIC on/off toggle in Settings (the existing sound toggle stays for SFX). Do NOT generate audio files yourself. The hand-off lists which audio files are still missing.
+
+## K. Saves & tests
+27. **v3 (and v2) saves MUST load**: wallets, upgrade levels, quest boards and eaten landmarks persist; a chapter completed under the old checklist rule stays completed/unlocked. New mode data lives in the same save. Key stays `hungry-hole-data-v1` — NEVER rename it; never read/write any other app's keys.
+28. **Tests**: data (every type has a model + plausible real scale per C9; I Spy/Educational pools valid per chapter; per-room growth sufficiency per F19), behaviour (joystick, door rule incl. under-gap, size-gate unlock + menu return, HUD upgrades pause/resume, I Spy lifecycle incl. re-roll, Educational help arrow + local-math rule, save migration from v3 and v2 shapes), pace REPORT (bot time-to-target-size per chapter vs the B7 window), reachability (F20), ui-flow/screens with zero console errors, screenshots per chapter + per mode.
+
+**v4 refinement (owner, minutes after the batch — I Spy pools):** each chapter's I Spy pool holds **30 items** (a different set per world, world-appropriate types incl. the special spawns). Runs draw from a **shuffle-bag (deck), not pure random**: the 30 are shuffled and dealt 5 per run without replacement; the deck reshuffles only when exhausted — so no item repeats until all 30 have appeared (~6 runs), and the same 5-item set essentially never recurs. Deck state is saved per chapter in the save file so the no-repeat promise survives closing the game.
+
+**v4 clarification (owner, same evening — map borders):** the boundary of every map is an **invisible border** (an unseen stop — an "invisible fence" at most, never a drawn barrier), and beyond it the world is **never blank**: the same terrain/surroundings continue visually as far as the camera can see. If §D12's optional faint fence is used anywhere, it must be barely-there — the owner's default is invisible.
+
+**v4 clarification 2 (owner, same evening — populated backdrop):** the continuation past every map edge is not empty terrain — it is a **non-interactive scenery surround**: the region visibly keeps going (east of Pitt Meadows you see the land and a few unreachable buildings stretching on; at the southern edge you see the BORDER itself — the crossing gates/Peace Arch area — and US land continuing beyond toward Blaine/Bellingham). Backdrop scenery is sparse set dressing only: nothing eatable, no quests, no items, purely visual, geographically faithful. Space gets the easy version: starfield, distant planets, slow drifting things. **Ch5 special case:** the globe has no edge (wrap) — no backdrop needed while you roam Earth; but in the chapter's endgame, as the hole grows to swallow islands/continents and Earth shrinks in view, the backdrop becomes SPACE — the Moon (which already has its special end-of-chapter moment) and Mars visible in the background as Earth turns.
+
+**v4 clarification 3 (owner, same evening — ALL maps, 4–5× bigger):** (a) The edge rule (§D + clarifications 1–2) applies to **all seven chapters, every border** — there is no black or blank anywhere on any map; beyond every invisible border the world visibly continues as scenery. (b) **SIZE: every chapter's playable area grows to roughly 4–5× its v3 footprint** (the 20-room house is Ch1's expression of this; Ch2's 5×5 blocks and Ch3's Whistler-to-border extent likewise). The scenery surround is additional and does not count toward the 4–5×. (c) Consequence, stated openly: §B7's 8–15 minute window YIELDS to this size directive on the large chapters — exploration is the point; the balance-bot time-to-target-size is still reported per chapter at hand-off so the real numbers are visible, and growth must be tuned so progress always feels steady (food within reach at every size — no empty dead zones).
+
+**v4 clarification 4 (owner, same evening — the SCALE DOCTRINE):** Reality scale (§C9) is the default for the whole game, with two exceptions the owner carved out himself. (a) CHAPTERS 1–4 (House, Neighbourhood, Metro Vancouver, Wilderness): TRUE reality scale, no exceptions. (b) WORLD TOUR (Ch5): true scale does NOT apply at globe size — landmarks (the Eiffel Tower, Tokyo Tower…) stay sized to the chapter's growth ladder so they remain readable targets; a true-scale Eiffel Tower would be invisible from continent-eating size. (c) SPACE (Ch6): not literal scale either, but the eight planets are SCALE-ISH RELATIVE TO EACH OTHER, in compressed real order (Moon < Mercury < Mars < Venus < Earth < Neptune < Uranus < Saturn < Jupiter < Sun): moons become eatable before their planet does (you absorb the Moon — and Jupiter's moons — long before Jupiter itself is possible), gas giants are late-chapter food, and the Sun stays last (standing lock). Saturn's rings are fields of eatable ice and rock bits. (d) BACKDROP COMPLETENESS: Ch5's endgame space backdrop shows the whole inner system — the Moon, Mars, Mercury AND the Sun — not just Moon and Mars.
+
+**v4 clarification 5 (owner, same evening — THE HUMBLING has NO scale):** Ch7 is exempt from the scale doctrine entirely — everything goes: giant enormous things, wild inventions, animals in space, a space whale, flying cars, original-design saucers/starships, satellites, space-debris fields, the wizard — maximal playful chaos, bigger and sillier the deeper you go. STANDING RULE REAFFIRMED: original designs only — no franchise IP (no actual Star Wars / Star Trek ships, no Pokémon, no cartoon characters); the *spirit* (a dragon-like space serpent, a heroic original starfighter) is welcome, the IP is not.
+
+**v4 clarification 6 (owner — Ch3 is built from REAL OpenStreetMap data; PRIVACY RULE):** Ch3 Metro Vancouver is generated from real OSM data, baked at build time (the game itself never fetches live data): building footprints extruded to their OSM heights where present, with typical-height fallbacks by building type where absent; roads, water and parks from OSM too. Named landmarks keep hand-modelled character on top of the data (Science World's dome is not a box). Credit "© OpenStreetMap contributors" appears in Settings/credits (ODbL). Feasibility spot-check (Kakashi, 2026-10-30): the downtown-core bounding box alone returns 4,202 building footprints from OSM — the data is there; metro-wide it is baked SIMPLIFIED (instancing/merging, footprint simplification) to protect file size and frame rate. **PRIVACY RULE (owner, explicit, non-negotiable): the owner's own home and corner must NOT appear or be singled out in any way — he may share this game. No real person's house is marked; homes are generic map data like everyone else's.**
+
+**v4 clarification 7 (owner — the POI layer: "anything that makes Vancouver Vancouver"):** every named place a real map would label inside the Ch3 bounds exists as a labelled, findable spot: ALL schools and high schools, the universities (UBC, SFU), Science World, the Vancouver Aquarium, community centres, major tourist attractions and major buildings — plus the owner's list: Grouse Mountain, Highway 1, Stanley Park including the mermaid statue (Girl in a Wetsuit), Lions Gate Bridge, Richmond Night Market, the casinos, IKEA, Richmond's residential/industrial sprawl and the farm areas south of it. These POIs feed Ch3's I Spy pool and Educational target sets ("find Science World", "find the Aquarium"). Labels use the existing floating-label style; POIs are eatable at size like any building unless they are scenery under a standing rule.
+
+**v4 clarification 8 (owner — Ch3 buildings go GENERIC; labels off by default):** This softens clarifications 6–7. The thousands of real OSM building footprints are NOT baked in. What stays real is the GEOGRAPHY: roads, water/coastline, parks and neighbourhood layout from OSM, and every POI at its real location. The building stock itself is a **library of ~20–25 generic building types** (varied heights, colours, rooftops) placed along the real streets at true scale. POIs (schools, universities, Science World, the Aquarium, community centres, attractions, the mermaid statue, Richmond Night Market, the casinos, IKEA…) are modelled with their characteristic SHAPES so people who know Vancouver recognize them — **but nothing is labelled by default**: a name label appears only while a place is an active I Spy / Educational / quest target. The unlabelled recognition is intentional — a quiet homage for those who get it. (The "you just ate X" feedback toast is separate and stays.)
+
+**v4.1 rulings (owner, 2026-10-30, after the audio fix):** (1) **THE VOICE IS REMOVED** — all text-to-speech is deleted game-wide (I Spy, Educational, sequence hunts, quests, everything). His children can read; nothing needs to talk. The Settings Voice toggle goes with it. Music and sound effects are unaffected. The sequence hunts' visual next-tile glow stays (only the talking goes). (2) **HUD UPGRADES BUTTON** — in-game it must say the word **UPGRADES** (not a tiny up-arrow icon) and be **ORANGE**. Same pause/resume behaviour. (3) Process note: the audio-manifest fix (94261ab) was committed by Kakashi directly in the moment; future game fixes go through builder prompts as usual.
+
+**v4.1 audio addendum (owner, same evening):** after the manifest fix the owner's iPhone plays the synth SFX but NOT the background music. Direction for the fix: route MUSIC through the WebAudio context — the same path as the (audible) sound effects — instead of bare media elements: fetch + decode each track, loop it as a buffer through a gain node (the MUSIC toggle drives that gain), start/resume it inside the first-gesture handler, and expose a test hook (e.g. HH.debugAudio()) reporting {track, playing, ctxState} so "is the music actually playing" is checkable headlessly without autoplay-policy bypass flags. The file contract is unchanged (same names, same manifest list — 94261ab stays).
+
+**v4.2 rulings (owner playtest, Ch1 interiors — his screenshots show the hole inside solid walls and whole screens of brown wall-top):** (1) **The hole NEVER enters walls or passes under/through solid objects** — hard collision against every wall segment and the full footprint of anything it can't eat (bump/topple unchanged for what it can tip). The X-ray see-through stays VISUAL ONLY; it never makes anything passable. (2) **DOORS ARE DELETED** from Ch1 — objects, the "Eat 1 door" quest and all door quest/edu references (pools stay 40 with other house items), the "bump the door" banner, the door tests and the no-fail door-swing rule. Rooms connect through OPEN DOORWAYS: plain gaps wide enough for the chapter's max-size hole; the reachability suite re-proves every room at every size. (3) **No wall tops/ceilings** — open-top dollhouse rooms; hallways are not roofed tubes, just floor between barrier walls. (4) **Walls FADE semi-transparent** when they sit between the camera and the hole or very close to it — the hole is always visible; no brown-out screens. Fading is visual only (fix 1 still applies).
+
+**Music direction v2 (owner, same night):** the first generated soundtrack is REJECTED — "AI slop, all synth waves." He wants SONGS: fully orchestrated, live-symphony sound, natural acoustic instruments only, memorable melodies, upbeat with real drive — explicitly NOT video-game music. The v2 generation prompts (workspace `hungry-hole-audio-prompts-v2.xlsx`, superseding docs/AUDIO_PROMPTS.md for the music tracks) bake this in with a hard anti-synth negative list. Same filenames; tracks are drop-in replacements. The 5 SFX prompts/files are unchanged (he likes the effects). Taste-test rule: regenerate the MENU track first and get his ear's verdict before redoing all 8.
+
+**v4.3 ruling (owner stuck in a Ch4 I Spy run at max size — targets effectively unfindable):** code audit shows target instances can only be removed by being eaten (and eating always credits), so the failure is LOCATABILITY, not existence: at 93 m the remaining targets are invisible specks somewhere in a huge map, and the I Spy compass is gated behind 45 s without a find. Rules now: (1) the I Spy direction arrow is ALWAYS ON from the start of the run (same as the Educational arrow — "it's a kids game, just leave it"); (2) every remaining target carries a beacon visible at any zoom (tall light pillar + name label when on screen) — a target is always locatable: arrow off-screen, beacon on-screen, at ANY hole size; (3) target instances are PINNED — swimming/wandering types don't carry a target away from its placed spot; (4) a target is never lost: if its object is missing/dead without being marked found, a fresh one is placed (self-heal). Applies to I Spy; Educational target steps follow the same beacon/pin rules where they use placed targets.
+
+**v4.4 rulings (owner, same session — nothing since v4.1 has been sent to a builder, so v4.2 + v4.3 + v4.4 ship as ONE combined prompt):**
+(1) **THE WORLD MOVES.** Anything that normally moves, moves: animals roam/swim/fly in their home zones, people walk (sidewalks/paths), cars drive the roads, plausible toys roll/trundle. Movers stay in their home zone/water/roads, stay edible under the normal capture rules, and pause beyond the active streaming radius (perf). This REFINES v4.3's pin rule: targets may roam their home area like their kind does — the always-on arrow + beacon tracks the LIVE position, so a target still can't get lost.
+(2) **MINIMAP, EVERY WORLD, BOTTOM-LEFT.** He loves Ch5's mini-globe for orientation; every chapter now gets a bottom-left minimap (Ch5 keeps its globe look): world/zones in simple colours, the hole as a pulsing dot, remaining I Spy/Educational targets as stars. Non-interactive (never eats joystick touches). The "How big am I?" card stacks with it — both visible, nothing overlapping the HUD buttons.
+(3) **I SPY GROWTH CAP.** In I Spy the hole never grows bigger than the biggest target in the hand requires (cap computed at setup from the largest target's fit size × a small margin). Points/coins still accrue; growth simply stops at the cap with a friendly one-time note. Story and Educational are NOT capped (Educational's "absorb Jupiter" needs full growth). Owner asked if the cap would slow things down — it does the opposite: runs stay fair and finishable.
+
+**v4.5 ruling (owner, Space playtest — "random shit everywhere, no logic"):** (1) **PLACEMENT IS LOGICAL, EVERYWHERE.** Space is the worst offender (screws and spaceships scattered uniformly): Ch6 becomes ORBITAL CLUSTERS — each planet/moon has up to ~10 satellites near it, an asteroid ring/belt placed where belts belong (the main belt between Mars and Jupiter), sparse stars between clusters, and big stretches of genuinely EMPTY space. Debris/junk types are rare and placed, never scatter. The same doctrine applies to every chapter: filler scatter is cut ~70%, authored/logical groupings stay, open space is allowed to be empty. (2) **BALANCE SCALES WITH IT:** XP required per size step drops by the same proportion as the edible XP removed (~70% where the cut is 70%), per chapter, so the pace bot stays in the 8–15 min window; the builder reports the per-chapter factors used in DECISIONS.md. Ch1 per-room sufficiency and all reachability must re-pass. This ships inside the v44 combined prompt as section F (owner had not yet sent it).
+
+**v4.6 ruling (owner: "the kids want to play together — make it happen"): TWO-PLAYER SAME-SCREEN CO-OP.** Design locked by Kakashi under his "make it happen" (two-device play is possible later via same-Wi-Fi pairing codes — a much bigger build; same-screen ships the fun first): chapter-pick screens for STORY and I SPY get a SOLO / 2 PLAYERS switch (Educational stays solo). Two holes (P1 orange rim, P2 teal rim), each with its own floating joystick anchored on its half of the screen. ONE shared world: anything either hole eats is gone for both; checklist + Tiny Quests are TEAM progress; coins pay the chapter wallet. Each hole grows from its own eating; chapter upgrades apply to both. The camera frames both holes (midpoint + fit-zoom, max-separation clamp); the minimap shows both dots. Story completes when EITHER hole reaches the target size (team win); I Spy shares the hand of 5 and the growth cap applies to each hole. Co-op is a session run — it never writes story position/size and isn't resumable; checklist ticks + coins persist like other modes. Pause/UPGRADES pause both. Ships as its own build AFTER the v44 combined fixes merge.
+
+**v4.6 CORRECTION (owner, minutes later — supersedes the same-screen design above):** NOT same-screen. Each kid has their OWN iPad: two devices JOIN one stage and play it together — he named **I Spy and Educational** as the together modes. Each player has their own screen and camera; they do NOT need to see each other at all times — an **arrow pointing to the other player** is the locator (plus the minimap partner dot). Prompt creation is PAUSED by the owner — more feedback is coming first; nothing gets built from the same-screen text.
+
+**v4.7 rulings (owner, design round — logged, NOT yet a prompt):**
+(1) **I SPY HANDS ARE ONE SIZE BAND.** A hand of 5 is dealt from targets of a similar size tier, and the growth cap = the top of that band (× small margin) — you can never outgrow your own targets into invisibility (his example: mountain-sized hole, cow target). This sharpens ruling E in the v44 prompt.
+(2) **STORY STAGES EXPAND IN ZONES AS YOU GROW.** The playable area starts as a small starter zone holding only small things; at each size threshold the border expands to the next ring, whose contents follow the scale ladder — his Space example: debris → satellites → spaceships/asteroids → mini stars → moons → planets in order → the Sun, until at the top tier the map is its full intended size. This kills sequence-breaking (wandering off, eating Jupiter before Earth, then Earth — a mission target — becoming unfindable). Content clusters (v4.5) live inside their band's ring. Educational ignores gating (full map, its targets span the world); I Spy plays inside its band's zone; co-op inherits the mode's rules.
+
+**v4.8 ruling (owner, minimap refinement — logged, not yet a prompt):** the minimap is TAPPABLE (this supersedes the "non-interactive" line in the v44 prompt's D9). Tapping it opens a big map with THREE zoom levels, cycled by tapping: **100% = the entire map corner to corner; 50% = half the map; 25% = a quarter of the map** (the % is how much of the world is on screen). The 25%/50% views FOLLOW the hole as it moves. The big map shows the same layers as the minimap (zones, hole dot, target stars, partner dot in co-op). A touch starting on the minimap opens the map — it must never also steer the hole.
+
+**v4.9 ruling (owner, Educational is learning-first — logged, not yet a prompt):** Educational must NOT be a growth grind. Each Educational set defines its own STARTING SIZE, sized for the task: traversal/find sets start big enough to travel the map comfortably (his example: the Seven Wonders set on the World Tour starts at roughly large-building size — big enough to cross countries; the goal is finding and learning the wonders, not grinding until you can absorb the Eiffel Tower). Absorb-target sets start at the size that fits their targets. Eating targets still completes steps, but size never gates Educational progress. This SUPERSEDES the v4.4/E10 framing ("Educational not capped because absorb-Jupiter needs full growth") — Educational is neither capped nor ground: it is PRE-SIZED per set. I Spy keeps its absorb-and-grow band mechanic as already ruled.
+
+**v4.10 rulings (owner, Ch1 + liveliness — logged, not yet a prompt):**
+(1) **THE HOUSE IS A REGULAR HOUSE NOW** — this SUPERSEDES the v4 "one floor, 20 rooms" mansion: **5 bedrooms, 3 bathrooms, a large kitchen, a large living room** (plus only normal supporting spaces — dining/hall/laundry as a real house has; the feel is a real family house, not a mansion). Per-room food sufficiency re-proves on the new layout.
+(2) **EXTERIOR WALLS FADE 50–75% NEAR THE HOLE** (sharpens v4.2's fade rule with a number): especially the camera-side wall — you still can't pass it (you're inside the house), but through it you see the OUTSIDE: the yard with cars, gardens, decorations, butterflies. The house sits in a visible yard scene at its edges (the populated backdrop-surround doctrine applies at house scale).
+(3) **IDLE ANIMATION EVERYWHERE** (broadens the v4.4 movement ruling): two layers — (a) movers travel (already ruled); (b) things that don't travel still ANIMATE: butterflies flutter, flowers/grass/trees sway, water shimmers, fans spin — "it's so boring if it just sits there." Nothing that could plausibly move or flutter sits frozen; perf discipline (pause off-stream) applies to idle animation too.
+
+**v4.11 ruling (owner: "keep it super logical" — the PLACEMENT CONSTITUTION, logged, not yet a prompt):** every object lives where it belongs, in every chapter — his examples are the standard: NO toaster in a bathroom (interior contents are room-appropriate, enforced by a type→room whitelist in the data tests); DRIVING cars exist only on roads — never driving through a park; parked cars at curbs, driveways and lots; people walk on SIDEWALKS and paths, not lawns/roads; the city is a road GRID with high-rises; street furniture follows real intersections (four street lights at an intersection, occasional stop signs, occasional garbage bins). Where a check is mechanically testable (room whitelist, driving-cars-only-on-road-zones, people-on-sidewalk placement), the data suite asserts it; the rest is builder doctrine under the density/logic section of the mega-prompt.
+
+**v4.11 addendum (owner): HOLE.IO IS THE COMPOSITION REFERENCE.** When the builder needs to see what "logical" looks like, study how Hole.io composes its worlds — deliberate neighbourhoods, traffic on streets, parks that are parks; nothing sprinkled at random. Reference is for COMPOSITION PRINCIPLES only; all art/models stay our own original library (no copied assets, per the standing no-franchise-IP rule).
+
+**v4.12 ruling (owner: "the ground looks so boring" — TERRAIN, logged, not yet a prompt):** flat textureless ground is banned on ALL maps. (1) Ground gets TEXTURE AND LIFE: surface variation (grass mottling, dirt patches, paths, rock, sand ripple, snow sparkle — per biome), never one flat colour for metres on end. (2) Terrain gets RELIEF: hills and mountains exist as raised landforms, not painted circles. (3) **MOUNTAINS ARE OBSTACLES**: the hole cannot pass through a mountain — it blocks like any solid, under the same doctrine as everything else (blocked until/unless the hole reaches the tier where that mountain is a legitimately eatable object by the fit rules; at endgame scales, eating a mountain is fair game). Ponds/lakes stay un-eatable water as already ruled.
+
+**v4.9 addendum (owner's screenshot — Educational, Downtown Famous Places 3/3, hunting the Gastown Steam Clock at 276 m, "as big as a stadium"):** pre-sizing alone isn't airtight — in the current build he GREW during the set and lost the last target anyway. So: **in Educational the hole's size is FIXED for the whole set** — set at the start, no growth inside Educational at all; eating completes steps, it never enlarges you. Set sizes are chosen so the set's SMALLEST target stays clearly visible at that size (the Steam Clock set wants a modest size — big enough to eat the clock and cross downtown quickly, small enough to see it).
+
+**v5.0 ruling (owner — THE OBJECTIVE LADDER, supersedes the v4.7 size-band hand and the E10/v4.4 cap in I Spy; refines v4.9):**
+**I Spy and Educational targets come as an ORDERED LADDER, smallest to largest.** You start sized for target 1; eating that target unlocks growth toward target 2; and so on (his Vancouver ladder: Steam Clock → Aquarium → Science World → a school → Canada Place → Grouse Mountain). **THE CAP IS THE NEXT TARGET:** growth stops at exactly the size that fits your current objective — a friendly message says so ("You're not growing anymore until you get Science World — complete your objective to grow more"). While capped you may roam and absorb freely and coins/points keep accruing (his explicit pick over blocking absorption — roaming the city at a fixed size is the fun); only GROWTH waits. Eating the objective unlocks the next size step and the message clears. This unifies the modes: I Spy's 5 targets are dealt as a ladder (ascending tiers, any 5 rungs via the deck); Educational sets were already ordered steps — they now use the same next-target cap instead of a fully fixed size, and v4.9's pre-sizing survives as the ladder's START size (sized for step 1 / comfortable traversal). Story mode is unaffected (its zone-expansion ladder, v4.7, is the same instinct at map scale).
+
+**v5.1 rulings (owner — logged, not yet a prompt):**
+(1) **CH3 VANCOUVER DRESSING PASS (that map only):** the SkyTrain is BUILT — elevated guideway standing up, stations, and a MOVING train running the line (where the real line dives underground, the game's stays up top — no underground). TransLink-style BLUE buses moving on the roads. The Sea-to-Sky corridor reads as the scenic ocean highway it is. And VANCOUVER IS GREEN: street trees line the sidewalks (he played and the sidewalks had none — a gap), Stanley Park is DENSELY forested, Grouse Mountain and Lynn Valley carry a "shit ton of trees" — dense forest you can roam through absorbing at cap without growing (ladder rules).
+(2) **NEW FOURTH MODE — EXPLORATION:** pick any map, **choose your size and change it up or down freely while you play**, no objectives, no growth, no caps, full map open — pure sightseeing/absorbing. This is the "just travel and absorb stuff" mode.
+
+**v5.2 ruling (owner — TITLE SCREEN, decided from generated samples):** the winner is **concept #3, the ALL-WORLDS POSTER** (workspace `hungry-hole/title-screens/`, file ts-03; merged mock ts-05): one big galaxy swirl with all seven worlds feeding into it, tagline "a hole that eats things & grows!", pure swirl — NO face on the hole. BUT the buttons come from **concept #2**: a pale cream-yellow strip across the bottom holding four big icon buttons — **STORY / I SPY / EDUCATIONAL / EXPLORATION** — plus a **small SETTINGS button at the bottom-right**. **UPGRADES IS NOT ON THE MAIN MENU** (upgrades live in-game via the HUD button); the old standalone CHAPTERS button also goes (STORY is the chapters entry). In the build, the poster becomes a LIVING scene — the menu world idles and swirls behind the title and strip, per his original "the main screen is you in the stage" idea; the mock is the art direction.
+
+**v5.3 CORRECTION (owner — supersedes v5.2's pick): the title screen is concept #2, VANCOUVER, as-is** (ts-02; final mock ts-06) — SkyTrain over the title, the faced swirl in the intersection, harbour and mountains behind. Its own strip stands: cream band, the four buttons (STORY / I SPY / EDUCATIONAL / EXPLORATION) made **a little smaller and squished to the LEFT**, and **SETTINGS small at the far bottom-right**. Mode flow confirmed: every mode button opens a world/chapter pick — STORY picks your chapter, I SPY picks the chapter to spy in, EDUCATIONAL has everything unlocked (pick any stage), EXPLORATION is full exploration of any map. UPGRADES stays off the menu (v5.2 ruling stands on that point). The faced swirl is title art only; the in-game hole stays a pure swirl.
+
+**v5.3 amendment (owner, on seeing the squished mock: "that doesn't make sense, I don't like how that looks"):** the strip layout is FINAL as mock ts-07 — the four mode buttons EXPAND to fill the whole bottom strip, big and evenly spaced, with just a **little space reserved at the far bottom-right for the small SETTINGS button**. The smaller/squished-left variant is rejected; don't build it.
+
+**v5.4 rulings (owner — CHAPTERS ARE NOW "WORLDS"; World 1 rebuilt from a real floorplan; logged, not yet a prompt):**
+(1) **VOCABULARY: "chapters" are called WORLDS everywhere in the UI** (Story = pick your world, etc.). Metro Vancouver stays as-is plus all its queued upgrades.
+(2) **WORLD 1 "THE HOME" IS REBUILT TO THE OWNER-SUPPLIED FLOORPLAN** (a real two-storey Vancouver house plan; layout reference saved as workspace `hungry-hole/floorplan-reference.jpg` — transcribe the LAYOUT, never any address): MAIN FLOOR — Living Room with fireplace, Dining Area, long Kitchen, Eating Area opening onto a DECK (outdoor stairs down), Master Bedroom with walk-in closet + ensuite bath, Bedroom 2, Bedroom 3, main Bath. LOWER FLOOR — Foyer, big Living Area, small Kitchen, Bedroom 4, Bedroom 5, two Baths, Utility/Laundry, and a two-car GARAGE. Stairs connect floors (in-game: stair tiles switch floors — no jumping, see (4)). Five bedrooms total, matching the "regular house" ruling; the plan supersedes the generic 5-bed layout.
+(3) **FURNISHED LIKE A LIVED-IN HOME, ORDERLY:** correct furniture in correct rooms (bedrooms: beds/dressers; living room: couch, coffee table, TV, fireplace; kitchen: appliances, plates, table, chairs; bathrooms: toothbrush, toothpaste and small things). Small starter food exists at FLOOR level in every room (crumbs, caps, socks, toys) so starting tiny works.
+(4) **HEIGHT/JUMP — KAKASHI'S VERDICT, owner asked ("maybe a bad idea?"): NO JUMPING.** Holes don't jump (Hole.io has none); it would break the one-joystick simplicity and the eat-by-size physics. Height is VISUAL (counters, tabletops, items resting on them) and surfaces' contents come along when the surface itself is eaten; floors/stairs handle the two-storey plan. Owner may veto.
+
+**v5.5 rulings (owner — WORLD 1 "THE HOME" detail pass; logged, not yet a prompt):**
+(1) **STAIRS ARE PATHS:** you roll/slide up and down them — no portals, no jumping; the two floors are one connected space via the stair runs (refines v5.4's floor-switch wording).
+(2) **THE LOT IS PLAYABLE:** front door → FRONT YARD (absorbable) → SIDEWALK; the barrier is the sidewalk's far edge. Neighbour homes left/right/across the street are populated EXTERIOR scenery only, never enterable. At the back: the main floor's deck/balcony has stairs down to the BACKYARD (grass, plants, a little garden, a tree with fallen apples beneath it). A GATE (already open) leads to the ALLEY — playable only across the width of the home's lot (a bicycle lives there); neighbours' garages line it as scenery. The GARAGE door is OPEN, two cars inside.
+(3) **DOORS ARE BACK — OPEN** (supersedes v4.2's deletion): every door stands open; doorways are never blocked; a door is just an object you may absorb when big enough. No door mechanics, no door-gated progress.
+(4) **THE HOUSE IS ALIVE** (his examples): kettle steaming on the stove, TV on, a toy car circling, a toy train running, the nursery mobile turning, a Roomba roaming, a hair dryer on. Room programme: the plan's rooms (it does have two living rooms and two kitchens — confirmed) with two conversions — one bedroom is a NURSERY, one room is a GYM.
+(5) **COLLISION FOLLOWS REAL OPEN SPACE** (refines v4.2's blanket no-under rule): an object's footprint is its actual contact points; where a model has genuine open clearance (between chair/table legs), the hole may slide through the gap; where the body reaches the ground, it's solid until eatable. Walls stay absolute.
+(6) **THE FAR VIEW:** at big zooms the lot sits in a living backdrop — mountains, blue sky, drifting clouds — scenery you can see but never enter ("you don't clip into the air").
+
+**v5.5 addendum (owner, Metro Vancouver): TREES ON SIDEWALKS PRETTY MUCH EVERYWHERE** — the v5.1 street-tree rule, strengthened: tree-lined sidewalks are the citywide default in Ch3, not a garnish on a few streets.
+
+**v5.6 ruling (owner — CH3 MOUNTAIN RESORTS get real content; logged, not yet a prompt):**
+(1) **GROUSE MOUNTAIN** is wall-to-wall trees — absorbable, so the player visibly SHAVES a path through the forest (eaten trees stay eaten; the trail persists). The **GONDOLA is built**: towers, cables, moving gondola cars going up and down. At the top there's the mountaintop park/lodge area.
+(2) **CYPRESS MOUNTAIN** is snowy: a ZIPLINE, a snow-tubing area, and a snowboarding area (terrain park) on its runs.
+(3) **WHISTLER**: it's SNOWING there. The builder RESEARCHES the real layout — where the village buildings actually are, the curves of the runs, and where the gondolas run — and places Whistler's content to match the real place (same research-real doctrine as the Vancouver OSM base map).
+
+**v5.7 ruling (owner — NEW WORLD: STANLEY PARK, built from the real map; logged, not yet a prompt):**
+START: on a **picnic blanket at ant scale** — moving ants to absorb, crumbs, cookies, marshmallows as the first foods. The world is Stanley Park, researched and built from its real map.
+BOUNDARIES (invisible barriers, populated scenery beyond — never black void): west/south cutoff at **Cardero Street** (a little of English Bay + Second Beach and its pool are in); water extends **~2 km out** around the park; north stops **halfway across Lions Gate Bridge** (never past it); east curves around Coal Harbour with the cutoff at **the gas station on the water**, Cardero's line north as the urban edge (West End high-rises, buildings, cars, cyclists, restaurants as the populated city edge).
+CONTENTS (research the real park, all of it): playgrounds with their equipment; the kids' water park; **the Vancouver Aquarium — enterable: if you're small enough you go INSIDE (builder looks up its interior layout online)**; the Teahouse; "the pineapple island" (owner's name — builder identifies it during map research; Kakashi to confirm); Lost Lagoon + the tiny pond; big trees and small trees everywhere; seawall + bike paths with people cycling the routes; lots of people, bikes, cars, parking lots, tourist buses; boats, canoes, paddleboarders; seals and orcas in the water.
+The world-redo sequence so far: World 1 The Home (floorplan), Metro Vancouver (stays + upgrades), this Stanley Park world. The old Backyard world's fate is TBD in the redo.
+
+**v5.7 addendum (owner, landmark corrections for Stanley Park):** "the pineapple island" is RETRACTED (he was mixing something up — builder, ignore it). Two landmarks are explicitly IN: the **SS Empress of Japan figurehead replica** in its real spot in the park, and the **Girl in a Wetsuit** statue (already in the POI layer as the mermaid statue — it belongs to this world too).
+
+**v5.7 addendum 2 (owner): Prospect Point Lighthouse is IN** (under Lions Gate at Prospect Point, Stanley Park world).
+
+**v5.7 addendum 3 (owner): Beaver Lake is IN** **and ALL of Stanley Park's parking lots are in**, at their real locations.
+
+**v5.7 addendum 4 (owner): the Vancouver Rowing Club and the yacht club (Royal Vancouver Yacht Club, Coal Harbour) are IN** at the park's Coal Harbour entrance.
+
+**v5.7 addendum 5 (owner): the TOTEM POLES at Brockton Point are IN** (scenery landmarks — the standing rule holds: totem poles are never eatable) **and DEADMAN'S ISLAND is IN** — a visible island in Coal Harbour off the park's edge (scenery across the water; likely what the retracted "pineapple island" was reaching for).
+
+**v5.7 addendum 6 (owner): Lost Lagoon reconfirmed, plus the PITCH & PUTT is IN and the TENNIS COURTS next to it are IN** (the Lagoon Drive cluster, Stanley Park world).
+
+**v5.7 addendum 7 (owner — STANLEY PARK DRESSING, world definition COMPLETE):** benches along all the walkways; lamps everywhere; trees in density ("a shit ton"); sidewalks and bicycle paths woven through for liveliness; and the park's real wildlife — the animals that actually live in that area (squirrels, raccoons, ducks, geese, swans, herons, turtles, beavers, plus the seals and orcas in the water). The owner calls this map complete as specified.
+
+**v5.7 addendum 8 (owner — THE BOUNDARY, with his own map):** the owner drew the fence on a map screenshot (saved: workspace `hungry-hole/stanley-park-boundary.jpg`, attach it with the build prompt). The red line he drew IS the playable edge: the whole park, a wide ring of harbour/English Bay water, halfway across Lions Gate, Deadman's Island and Coal Harbour inside, and a strip of the West End (a few blocks of streets and buildings at the park entrance) inside. **Outside the red line is still populated and alive — moving cars and all — so the world looks real when you reach the edge; the player is simply blocked at the line.** Scenery beyond, never enterable, everywhere in this world.
+
+**v5.8 ruling (owner — the SPACE world, redo version; logged, not yet a prompt):**
+(1) **START: the APOLLO LANDING SITE on the Moon** (owner picked it over Kakashi's ISS recommendation). The site is dense with absorbable Apollo stuff — lander, flag, rover, experiments, footprint trails, golf balls — on a real lunar surface. Grow there until you're big enough to **absorb the Moon itself; eating the Moon is the gateway into space** (the zone ladder made literal).
+(2) **A LIVING SOLAR SYSTEM**: all 8 planets ORBIT the Sun at all times — you chase a planet to catch it. Moons orbit too: **Jupiter gets its moons in their dozens** (owner: "have all 50 moons, why not"). **The dwarf planets sit where they really are** (owner counts eight — Pluto, Ceres, Eris, Haumea, Makemake plus the leading candidates; finding them teaches their names — names show per the label rules). The asteroid belt (v4.5 placement), the **OORT CLOUD** at the far edge, and the **hypothesized PLANET NINE** out there to discover — all within reach.
+(3) **THE SUN is absolutely giant — the endgame**, the last and biggest thing in the world (fits the v4.7 ladder: the Sun is the final course).
+(4) The v4.5 orbital-cluster doctrine still governs the filler: planets/moons as clusters, genuinely empty space between, junk rare. The v4.7 zone expansion maps onto this world as: Apollo site → the Moon → near space → the system → the far dark (Oort / Planet Nine).
+
+**v5.0 ADDENDUM (owner restatement — the CAP is the game's universal progression rule, not just an I Spy/Educational device):** as soon as you reach the size fitted to the NEXT task, you STOP growing there. You can still absorb freely (and roam, and earn), but you do not grow past it until the task is done — so the player explores at the right size and is always able to absorb the very thing they need to absorb to progress, in the story or the game. Space example: you cannot farm up to Sun-size in the Apollo meadow — each beat caps you at its own size until you eat the thing that matters (the Moon first).
+
+**v5.9 ruling (owner — DENSITY DISCIPLINE: classy, not carpeted; logged, not yet a prompt):**
+(1) GENERAL: a screen does NOT need stuff in every space. Restraint is the default. Concrete rule from the owner: if a size step currently takes ~20 eats, rebalance it to take **~4** — each eat worth more, the screen roughly 60% emptier. Growth pace (bot 8–15 min/world) is preserved by per-eat value, never by clutter.
+(2) DENSITY IS A PER-WORLD ARTISTIC CHOICE, not a global fill: Exploration mode may run dense and joyful; Vancouver's trees stay dense (that's its truth). Emptiness elsewhere is CORRECT, not unfinished.
+(3) SPACE APPLICATION: **around Earth — genuinely lots of debris (that's real), and the ISS up there too** (the owner notes: by the time you've eaten the Moon you can eat the ISS — the station is a near-Earth snack after the Moon, not a start). **Around Jupiter — NOT debris: moons, and maybe a few aliens, that's it.** The long roads between planets are mostly classy emptiness, punctuated: an alien oddity, a spaceship or rocket ship, meteors, asteroids, a shooting star small enough to catch somewhere, a little debris here and there. Discoveries, not carpet.
+
+**v5.10 ruling (owner — the GLOBE world, content pass; logged, not yet a prompt):**
+(1) START SIZE CONFIRMED: **small-house size** (Kakashi concurred; each world owns its start scale — Home crumbs, Stanley Park ant, Space astronaut gear, Globe house).
+(2) **EVERY MAJOR HIGHWAY ON EARTH is drawn on the globe** (OSM motorway/trunk network, simplified, as surface lines — Kakashi's feasibility check: standard data + rendering, a one-time prep). **While you're small enough, the highways carry traffic**; from far out, traffic reads as moving flow along the lines. Real cars/trucks only near the start scale. **NO streetlights on the Globe** (explicit owner exclusion, this world only).
+(3) **THE LANDMARK PROGRAMME**: all the major world wonders; famous tourist spots at **2–3 per country** — and **~10 each for the big countries (China, Russia, Canada, US)**. Named examples: Mount Fuji, Tokyo Tower, the Tokyo Skytree ("the tree tower"), Kyoto's shrines. **Every Disney and Universal theme park and the major theme parks** — placed at their real locations as theme parks in the game's own art (rides, wheels, our own fairytale castle), per the no-franchise-IP rule: no Disney/Universal names, logos or their exact castle.
+(4) **THE OCEANS ARE NOT EMPTY**: giant ships on the water, big whales, orcas, sharks (owner: no salmon — pointless at this scale; the density doctrine applied to the sea).
+(5) Speed of travel scales up as you grow (house → building → across the world).
+
+**v5.11 addendum (owner — the Globe is a REPLICA; travel must respect its scale; logged, not yet a prompt):**
+(1) **GEOGRAPHY TO SCALE**: continents, countries, oceans, and **all major bodies of water and rivers (the Nile named) exist in their true shapes, proportions and positions** — a replica of the Earth you genuinely traverse. (Kakashi's reading, owner's to veto: the MAP is to scale; the hole's growth steps and speeds are compressed for fun, or a house-sized hole on a true-scale Earth is invisible and the Pacific takes a week. Europe's density of countries is exactly why the 2–3-per-country programme shines there; Africa gets its landmarks and its river too.)
+(2) **SPEED IS THE GLOBE'S IMPORTANT UPGRADE**: crossing countries and **giant bodies of water must not be wasted time** — the speed upgrade line matters most here, and **travel over water is faster than over land**.
+(3) Named in this pass: London — the Shard ("the spire"), Buckingham Palace ("where the queen lives"), London Bridge; Paris — the Eiffel Tower, the Louvre.
+
+**v5.12 addendum (owner — landmark research directive + the roster):**
+(1) The Globe landmark programme is a RESEARCH task, not a list of what the owner happened to name: **the builder looks at ALL countries and finds 2–3 famous things per country; larger countries with more famous stuff get more (4–5, up to ~10 for the biggest)**. An unnamed landmark is not an excluded landmark.
+(2) **THE ROSTER IS FIVE WORLDS** (owner's count, confirmed this pass): The Home · Metro Vancouver · Stanley Park · Space · The Globe. All four modes (Story, I Spy, Educational, Exploration) run on the worlds. The old build's Wilderness and Chaos worlds are NOT in the five — their fate (retired vs later addition) is UNDECIDED, owner's to call; builders do not rebuild them into the five.
+
+**v5.13 rulings (owner — roster FINAL, pre-prompt checkpoint):**
+(1) **CHAOS WORLD: RETIRED.** The owner doesn't like it; it's out, not parked.
+(2) **WILDERNESS WORLD: RETIRED for now** — he did not like the built map (its water/biome mix). It may only ever return if HE supplies a reference for exactly what should be mixed in it; the old design is not to be rebuilt or "improved" unprompted.
+(3) Roster is final at FIVE worlds: The Home · Metro Vancouver · Stanley Park · Space · The Globe.
+(4) **MUSIC v2 IS IN SCOPE for the build** (reaffirmed): the synth soundtrack is out; fully orchestrated songs take its place (same filenames, drop-in; the v2 generation prompts + menu-first taste-test rule stand).
+
+**v5.14 ruling (music track mapping for the five worlds):** music files map in ROSTER order — `ch1.mp3` = The Home, `ch2.mp3` = Metro Vancouver, `ch3.mp3` = Stanley Park, `ch4.mp3` = Space, `ch5.mp3` = The Globe, plus `menu.mp3`. The old ch6/ch7 tracks retire with their worlds. The v5 build wires the manifest to this mapping (this note is later than the mega-prompt's "don't restructure audio" line and supersedes it on this point: keep the WebAudio system and all SFX exactly as-is; only the world→track mapping follows the new roster). Generation prompts: `hungry-hole-audio-prompts-v3.xlsx` (orchestral rules unchanged; menu-first taste test stands).
+
+**v5.15 ruling (owner — CO-OP IS DECIDED: build it on the Battle Monsters pattern; supersedes v4.6's mode list):** two-iPad co-op comes to **ALL FOUR modes — Story, I Spy, Educational, Exploration** (v4.6 said I Spy + Educational only; this widens it). Architecture = the owner's Battle Monsters reference: WebRTC via the **free public PeerJS broker as introducer only** (traffic then flows iPad-to-iPad; the accepted dependency: if the broker is unreachable, co-op can't connect and nothing else is affected), **6-character room codes** (unambiguous letters — no 0/O, 1/I), PeerJS behind a transport layer (`HH.Net`) loaded as an optional CDN script — if it fails to load, the whole game works untouched and co-op shows a kid-worded "can't connect" toast. No accounts, no lobbies, no discovery, no chat. **Sync adaptation (Kakashi's engineering call):** Hungry Hole is NOT a deterministic lockstep engine like Battle Monsters, so co-op runs **host-authoritative**: the host's save is the session's world truth, the host simulates, guests stream hole movement and receive world deltas + snapshots; the wire is never trusted (unknown ids ignored, per the BM validation rule). Either player eating the current objective advances the shared ladder for both; caps apply per hole. Persistence default (owner may veto): a guest keeps the COINS they earn in a co-op session; world progression lives in the host's save; I Spy uses a session deck from the host; Educational learning totals increment for both. Final verification is the owner's own two-iPad test, as it was for Battle Monsters.
+
+**v5.15 addendum (owner bug report): MUSIC CONTINUITY** — opening the Upgrades menu changes the song; it must NOT. A pause overlay never switches or restarts the track: you're still in the world's stage, so the world's song plays straight through, position uninterrupted. (Folded into the v5.1 co-op prompt as an independent Part 2 fix, same branch.)
+
+**v5.15 addendum 2 (owner UX fix): THE MINIMAP MOVES TO THE TOP-LEFT** — in every world and mode (including the Globe's mini-globe). Bottom-left is joystick territory and he keeps tapping the map by accident mid-steer. The objective/quest stack rearranges so nothing overlaps; a minimap tap still opens the big map and still never steers.
+
+**v5.15 addendum 3 (owner, from a screenshot): METRO VANCOUVER GROUND** — residential areas currently render on a pale beige/sand ground; that reads wrong. **Residential ground becomes GREEN** (grass/lawn) everywhere in the Vancouver world. Beaches keep their sand colour; parks, water, and roads are unchanged.
+
+**v5.15 addendum 4 (owner, from a screenshot): WHISTLER'S GROUND IS SNOW** — the snowfall particle effect is there, but Whistler's ground renders beige/green/grey. In the Whistler zone the ENTIRE ground is white — no green, no beige. Darker grey stays acceptable for bare mountain rock only; roads, lakes and water keep their colours. (This overrides the Part-4 residential green inside the Whistler zone.)
+
+**v5.15 addendum 5 (owner, from a screenshot): THE VISIBLE MAP IS THE PLAYABLE MAP** — in Metro Vancouver (Exploration screenshot, max size, stuck in the empty north), areas that render inside the map's portrait rectangle are blocked by the old real-outline border polygon. New rule for flat worlds: **the playable boundary is the map rectangle itself** — everything visible inside it is enterable; outside it, blocked. Story's zone rings still expand within the rectangle and open it fully at the top tier; Exploration opens the whole rectangle from the start. Newly reachable areas (the northern mountains/backcountry) get their real terrain and content from the map data, not empty fill. (The Home's lot lines and Stanley Park's owner-drawn red line are their own boundaries and stand.)
+
+**v5.15 addendum 6 (owner, from a screenshot at YVR): THE AIRPORT IS ALIVE** — Vancouver International currently reads as runways on grass with a parked plane. Build the airport's proper buildings (terminals, parking lots/parkades, the airport's real structures) and make planes MOVE: planes flying in the sky here and there, planes taking off (and the landing/taxiing life that goes with it).
+
+**v5.15 addendum 7 (owner, from a screenshot at False Creek): SCIENCE WORLD IS A BALL** — it currently renders as a small purple dome floating in the water. Builder: look up what Science World really looks like — a big geodesic SPHERE with lattice lines all around it, on its real footprint at the east end of False Creek (on land, at the water's edge). Make it a ball, with the lines, and make it BIGGER.
+
+**v5.15 addendum 8 (owner playtest — THE HOME, three fixes):**
+(1) **STAIR ARROWS**: the floor transitions are smooth (owner loves them), but the stairs need a visible arrow cue that reads "go upstairs" / "go downstairs" so a kid knows where the stairs lead.
+(2) **CORRECTION — THERE IS NO GARAGE**: the real house parks its two cars UNDERNEATH THE PORCH (that's how the house was built). The build's two-car "garage" room treatment is wrong for this house: the two cars live under the porch; no garage room.
+(3) **DECK PLANTS BLOCK THE WAY OUT**: two garden plants beside the deck stairs block the route into the backyard when you're not big enough to eat them. Move those two plants a little further north so the deck-to-backyard path is passable at small sizes. (Plants stay; only their position shifts.)
+
+**v5.15 addendum 9 (owner): EXPLORATION IS A SANDBOX FOR UPGRADES TOO** — in Exploration: infinite money for upgrades AND free level control both ways — set any upgrade to any level 0–10 (max everything, back to zero, park Speed at 4 because max is too fast — his examples). Session-only: Exploration's sandbox levels are NEVER written to the save (Exploration persists nothing, as locked); Story/I Spy/Educational keep the real wallet + levels untouched.
+
+**v5.15 addendum 10 (owner): KILL THE PERPETUAL TEETER — EVERYWHERE** — the Stanley Park picnic blanket (absorbable, and the hole spawns on it) rocks/tilts back and forth constantly, and so does anything the hole sits under. That idle tilting motion is REMOVED for ALL objects. What stays: the decisive topple — when the fun-wobble conditions are met, the object tips IN, once; otherwise it sits still. No endless rocking.
+
+**v5.15 addendum 11 (owner, from a screenshot at max size in Stanley Park): NEVER SHOW THE VOID** — at the largest hole size the camera pulls far out and the frame's top/left show the world's edge: blank beige/grey nothing beyond the water. In ALL FIVE worlds, at maximum zoom-out, the world must visually CONTINUE past every frame edge — extend each world's surround (ocean, backdrop land, the Home's far-view, Space's starfield, the Globe's space) well beyond the largest possible frame, corners included. Playable bounds do not change; this is purely what you SEE. No blank grey/beige/black ground may ever be visible in play.
+
+**v5.15 addendum 12 (owner): THE GLOBE MUST GO OVER THE POLES** — travelling north he keeps getting jumped somewhere wrong (the Arctic/Antarctica/Iceland confusion). A globe is a globe: rolling north from Canada must cross the North Pole and come down the other side into Europe (longitude flips 180°, heading reverses to southward) — seamlessly, no teleport, no dead zone, no snap. Same at the South Pole. The polar singularity in the movement frame is the builder's problem to solve, not the player's.
+
+**v5.15 addendum 12, owner's own summary: THE GLOBE HAS NO BORDERS AT ALL** — seamless in every direction: over both poles, across the date line, everywhere. A closed sphere; the player should never find an edge.
+
+**v5.15 addendum 13 (owner, on Space): STILL TOO MUCH DEBRIS — and his diagnosis is right.** Space kept the densest filler of any world (factor 0.30 vs 0.03–0.09 elsewhere) as an economy crutch — eats everywhere so growth never starves. That inverts v5.9: **value does the economy's work, not volume.** Ambient debris outside the Earth-orbit zone and the planetary clusters is cut hard toward the other worlds' levels; per-eat value rises so eats-per-step approaches ~4 and the pace bot still lands 8–15 min. Earth orbit stays genuinely cluttered (that's real); the rest of the system is classy emptiness with clustered, worth-chasing things.
+
+**v5.15 addendum 13, CORRECTED by the owner minutes later: LEAVE THE WORLDS AND THE GROWTH SYSTEM ALONE** — he likes how all the stages are built and declined the objective-growth redesign. The ONLY density change: **Space's scattered stuff is cut by 50%**, no compensating value rebalance, and **it is fine if Space takes longer** — the 8–15 min pace guardrail is relaxed for Space only. (The "value not volume" framing above is superseded.)
+
+**v5.15 addendum 14 (owner): METRO VANCOUVER STORY STARTS AT CANADA PLACE** — Story's spawn sits far from Objective 1 (the Gastown Steam Clock), so the chapter opens with a long empty trek. The Story start moves to the Canada Place area — downtown waterfront, a short hop from Gastown — so the first objective is close and the chapter starts in the city's heart. (Exploration's Kitsilano start is unchanged; I Spy/Educational place their own sets.)
+
+**v5.15 addendum 15 (owner): ADD THE SEABUS** — Metro Vancouver gains its passenger ferry: the SeaBus crossing Burrard Inlet between Waterfront Station and Lonsdale Quay, running its real route as a water mover — crossing, docking at each terminal, crossing back. (Queued in the v5.2 batch, not the v5.1 build.)
+
+**v5.15 addendum 16 (owner): WORLD ORDER** — in every world picker (all four modes): **The Home · Stanley Park · Metro Vancouver · The Globe · Space.** Stanley Park moves ahead of Metro Vancouver; the Globe ahead of Space. Presentation order ONLY: each world keeps its own name, music track (v5.14 mapping is per-world, not per-slot), save data and identity — no save data migrates between worlds. (v5.2 batch.)
+
+**v5.15 addendum 17 (owner, from a Home screenshot — HUD + a bug):**
+(1) **BUG — hunt targets vanish on approach**: in an Educational sequence hunt (his run: spelling B-E-D in the Home), the target he is going for disappears when he gets near it. Placed targets must NEVER despawn on approach (the v4.3 self-heal/persist rule extends to all placed Educational and I Spy targets: a target persists until eaten; if anything removes it, it is restored).
+(2) **THE QUEST STACK COMPRESSES**: with the minimap moving top-left (v5.1 Part 3), the objective + checklist + Tiny Quest stack must shrink to share the corner — smaller font, tighter rows; the left column stays slim.
+(3) **MINIMAP ZOOM IS THE PLAYER'S CHOICE (revises v4.8)**: the corner HUD minimap defaults to the zoomed-in **25%** view following the hole — NOT the whole map. The player can set the HUD minimap to **25% / 50% / 100%** (choice lives on the big-map view; remembered as a UI preference). Tapping the minimap still opens the big map. (v5.2 batch.)
+
+**v5.15 addendum 18 (owner): SPEED x2, CAP +1, AND THE OBJECTIVE NEVER VANISHES:**
+(1) **DEFAULT SPEED IS 2x** — the maps are too big for the current base pace; base movement speed doubles in all worlds (the Speed upgrade stacks on top as today).
+(2) **THE CAP IS NOW +1 (amends v5.0)**: you may grow **one size step larger than your current objective's fit size** before growth stops — the cap is objective-fit + 1 step.
+(3) **THE GUARANTEE he asked for, confirmed**: being one size larger NEVER makes the current objective disappear or become unabsorbable — the Steam Clock (his example) stays put, stays visible, and you can still absorb it. Overshooting the objective's size invalidates nothing. (This is the design rule behind the Part 4 vanishing-target bug: any build behaviour that removes a target because the hole outgrew it is a bug.) (v5.2 batch.)
+
+**v5.15 addendum 18, CORRECTED by the owner minutes later: NO CAP +1.** He changed his mind — the +1 growth headroom is dropped ("it's already built in"). **Only the base speed x2 stands** from this addendum: faster base speed means kids absorb more, sooner, across the big maps, and the Speed upgrade remains their lever for more. (The objective-persistence guarantee in (3) still stands — it already lives in addendum 17(1) and the Part 4 bug.)
+
+**v5.15 addendum 19 (owner): WORLD 1 IS RENAMED "THE VANCOUVER SPECIAL"** — "The Home" becomes **The Vancouver Special** in all UI (world pickers, HUD header, quest boards, everywhere the world is named). A label change only: the world's id, saves, music and contents are untouched. (His words as dictated: "the van special" — read as Vancouver Special, the classic Vancouver house style this world is; flagged to him for correction if wrong.) (v5.2 batch.)
+
+**v5.15 addendum 19, REVERSED by the owner minutes later: IT STAYS "THE HOME."** His call: he would love "The Vancouver Special" for himself, but the kids understand "The Home" — and the kids win. No rename. (Addendum 19 is void.)
+
+**v5.15 addendum 20 (owner, asked + approved): ROLLING, EATABLE HILLS** — the land worlds stop being flat. Continuous rolling elevation where the real terrain calls for it (Stanley Park's rises; Metro Vancouver's North Shore, Grouse, Cypress, Whistler): the hole visibly climbs, crests and descends. **A hill is one giant eatable landform** (extends v4.12's block-until-eatable mountain doctrine): too small and it is landscape you roll around; big enough and you eat the whole hill — it flattens away and everything on it (its trees) is consumed with it, the way a table's contents go when the table is eaten. Elevation comes from the real geography the worlds already use. The Home stays flat (a house lot is flat). Eaten hills persist in the world's eaten set like any landmark. (v5.2 batch.)
+
+**v5.15 addendum 21 (owner): THE HOME'S STAIRS GET REAL HEIGHT** — since hills prove height is possible, the Home's two floors stop being pure layers at the stairs: the stair runs become a TRUE continuous climb — rolling up the stairs genuinely gains height (you watch the floor below fall away), rolling down genuinely descends. Purpose: a child who cannot read yet understands UP and DOWN from the height itself. Pairs with the v5.1 stair arrows — which must therefore read as pure pictures (big arrow graphics; any words are a bonus, never the carrier of the meaning). (v5.2 batch.)
+
+**v5.15 addendum 22 (owner): THE HOME'S STAIRS ARE NEVER EATABLE** — interior stairs and deck-to-backyard stairs alike: permanent fixtures at any size, in any mode. They exist purely as wayfinding — to tell a child "stairs go up here / down here." Not objects, not obstacles-to-consume: fixtures, like the world's frame. (Refines addendum 21 and the v5.1 stair work.)
+
+**v5.15 addendum 21/22, owner's clarification: THE STAIRS LOOK LIKE STAIRS** — real stepped geometry (visible treads and risers), not a ramp painted as stairs: you can SEE the steps the way you see that walls are walls, and the run's sides are solid like walls (no rolling off the side or cutting through). Only the Home's two stair runs get this treatment.
+
+**v5.15 addendum 24 (owner): THE FRONT OF THE HOUSE GETS DRESSED** — front yard gains: a **trampoline**, **fencing around the front yard with a gate**, a few more **bushes**, a **concrete path from the fence gate to the front door** with **flowers along its sides**, and **another tree out front** (the backyard apple tree stays as is). The gate stands open and the path route is never blocked at any size — the way in stays walkable for a crumb-sized hole. (v5.2 batch, with the other Home work.)
+
+**v5.15 addendum 25 (owner): SECOND BEACH POOL (Stanley Park) + THE FENCE RULE** — Second Beach Pool gets its real dressing: a **white picket fence all around the pool** and its **three slides — a seal slide and two other slides**. And a general fence mechanic from the same note: **a fence is never eaten as one object** — a fence is a chain of segments, and you absorb **segments**, each at its own size fit, until the run is gone. (Applies to fences everywhere, including the Home's new front fence.) (v5.2 batch.)
+
+**v5.15 addendum 26 (owner): THE GLOBE TEACHES GEOGRAPHY + AN EXPLORATION SPEED DIAL:**
+(1) **COUNTRY BORDERS drawn for every country** on the Globe.
+(2) **LABEL LAYERS, KEYED TO SIZE** (no provinces/states, ever): capital cities — capitals are the ONLY cities shown, marked with a **star**; country names centred inside their borders; continent names spread over their continents. Visibility by hole size/altitude: **tiny → no continent labels** (they make no sense at ground level); **mid sizes → capitals + countries**; **giant → capitals fade out** (too small to matter), countries remain — and in dense regions (his example: giant over Europe) country names thin out by a density rule so the view is never a wall of text. Balanced and pretty beats complete at the top tier. Purpose: Exploration becomes a geography lesson — a child roams, reads where countries are, and absorbs the 2–3 famous things in each.
+(3) **EXPLORATION GAINS AN "ADJUST SPEED" STEPPER** beside the existing Adjust Size control (the size control moves up; speed sits below it, in his sketch): in Exploration a player can dial travel speed up/down mid-run — with maxed upgrades the stock speed is way too fast for learning; session-only like every Exploration dial. (v5.2 batch.)
+
+**v5.15 addendum 27 (owner): THE GLOBE — UFOs OUT (nearly)** — the Globe's sky is littered with UFOs. Remove them from the scatter: at the largest sizes the world should show **clouds and coins, and the mountain ranges — that's about it**. A maximum of **TWO UFOs** may exist somewhere on the Globe as rare finds, randomly placed. (Scope: the Globe, all modes. Space's own rare alien oddities under v5.9 are a separate ruling and stand unless he says otherwise.) (v5.2 batch.)
+
+**v5.15 addendum 28 (owner): THE GLOBE SAYS WHERE YOU ARE** — with every country's borders drawn, the game always knows what country the hole's centre is over: show that country's name in **yellow text at the bottom of the screen** ("you are in ___"). Over open ocean, no country name shows. Part of the Globe's education layer (addendum 26). (v5.2 batch.)
+
+**v5.15 addendum 28, owner's wording fix: JUST THE NAME.** The bottom readout shows only the country name itself — "Canada", "United States", "UK", "Japan" — no "you are here" prefix or framing words.
+
+**v5.15 addendum 29 (owner, with his dataset): EVERY COUNTRY HAS ITS ANIMALS** — the owner supplied `world_animals.xlsx`: **195 nations × 8 animals each** (Animal 1 = flagship/national animal; columns incl. continent + subregion). The Globe places each country's animals inside its borders (sea animals in its coastal waters) as roaming movers, streamed by what's in view. **Visibility follows the label layers**: animals show from the start sizes through a decent mid-range and are gone at the giant tiers (sub-pixel anyway) — the educational point is a child exploring at readable sizes and MEETING the animals of each country, starting with their own. The spreadsheet is the dataset of record; species render from the game's low-poly library by animal family (big cat, bear, deer, bird, marine…), tinted/named per species. Animals are ambience: eatable when the hole fits them, respawning like other movers; nothing about them persists. (v5.2 batch.)
+
+**v5.15 addendum 30 (owner, with his dataset): THE LANDMARK ROSTER IS NOW HIS LIST** — `world_195_countries_famous_landmarks.xlsx`: **195 countries, each with 10–20 named famous landmarks & special places** (~2,400 total). This SUPERSEDES the v5.12 "builder researches 2–3 per country" programme: the Globe populates HIS landmarks, each at its real location, in the game's own art. Natural features (national parks, reefs, canyons, falls) render as area features, not point models. The no-IP rule still governs renderings (a listed theme park becomes the game's own fairytale castle park — no brand names or logos). (v5.2 batch.)
+
+**v5.15 addendum 31 (from Kakashi's v5.1 verification — two carry-overs into the v5.2 batch):** (1) Stanley Park's max-zoom surround apron renders as a bare beige street grid (screenshots 53/54) — it must read as its real geography (inlet water N/W, real city S/E); Vancouver's apron passes. (2) Co-op hardening: Kakashi's coop.js runs gave 18/19, 16/19, 17/19 with recurring signatures — position-sync freshness, Educational guest answers not crediting learning totals, I Spy bonus timing. Root causes to be found and fixed (game or test), acceptance = 19/19 three runs running.
+
+**v5.15 addendum 32 (owner): CO-OP GROWS UP — UP TO FOUR PLAYERS** — co-op is no longer two-player. A session is **one host + up to three guests (four players total)**, all joining the host's one room code, in all four modes — this extends the v5.15 design rather than replacing it: host-authoritative sync stays (the host's save is the session truth; guests stream movement to the host; the host relays world state to every guest). Every two-player rule generalizes: each player gets a partner arrow + minimap dot for **every** other player (distinguishable per player); the objective ladder stays shared (any player's eat advances everyone; each hole keeps its own size cap); pause stays shared; disconnects stay soft per player — a guest who drops banks the coins they earned and the session plays on without them; if the host drops, the session ends, every guest banks their earned coins, and nobody's solo progress is ever lost. Persistence is unchanged per player (host progression writes to the host's save; guests keep personally-earned coins — except I Spy, see addendum 33). The automated test transport must stretch to four pages; the real-device gate grows with it (the owner's multi-iPad test). (v5.3 batch.)
+
+**v5.15 addendum 33 (owner): I SPY TOGETHER IS WON AS A TEAM** — when I Spy is played with friends, the team achieves it together, not individually: the deck is the team's deck (already true via the shared ladder), and **when the team finishes it, the win is recorded on EVERY player in the session's own save** — each player's world marks that I Spy as won — and the win bonus pays every player's wallet. This supersedes the v5.15 persistence default for I Spy (guests formerly kept only their coins): a guest who plays an I Spy session through to the finish earns the win on their own save, same as the host. A guest who drops before the finish banks their coins only. Solo I Spy is unchanged; Story / Exploration / Educational persistence is unchanged. (v5.3 batch.)
+
+**v5.15 addendum 34 (owner): IN MULTIPLAYER, UPGRADES NEVER PAUSE THE GAME** — owner report: in co-op, when a player opens Upgrades, the whole game pauses. That comes from solo (the Upgrades overlay pauses the run) compounded by v5.15's shared pause, and he overrides it for this case: **in a multiplayer session, opening the Upgrades overlay pauses nothing — not for the player upgrading, not for anyone else.** The world keeps simulating, everyone else keeps playing, and the upgrading player's hole simply idles unsteered where it sits until they close the menu and steer again. A guest upgrading must never freeze the host's world; the host upgrading must never freeze anyone's. Solo play is unchanged (Upgrades still pauses a solo run — there it is a feature). The deliberate shared Pause — a player actually choosing Pause — is a separate thing and stays shared. (v5.3 batch.)
+
+**v5.15 addendum 35 (owner): IN MULTIPLAYER THE WHOLE WORLD IS OPEN — NO ZONE BARRIERS** — owner report: in co-op, players hit the zone barrier and can't get out. Those rings are solo Story's design (v4.7: the world expands ring by ring as you grow, to pace the objectives) and co-op inherited them unchanged; he rules multiplayer different: **in a multiplayer session the entire world is loaded and open to every player from the start — no zone rings, no confinement; anyone can be anywhere in the world at any time.** Each player's game fully loads and renders the world around their own hole, wherever they are (nobody is limited to the host's area or a streamed bubble). Finding each other is what the partner arrows and minimap dots are for. What does NOT change: the world's outer border (the edge of the map itself — beyond it is scenery), the shared objective ladder, and per-hole growth caps: a small hole can roll anywhere, it just can't eat what doesn't fit it yet. Solo Story keeps its zone rings, untouched. (v5.3 batch.)
+
+**v5.15 addendum 36 (owner): IN MULTIPLAYER, GROWTH IS SHARED — THE TEAM GETS BIGGER TOGETHER** — owner playtest report, and he calls it a bug: Arthur (the smaller player) couldn't grow enough in co-op — per-player growth plus size-gated zones is a trap in multiplayer: the kid who falls behind stays small and fenced in while the other races ahead. (In solo that pacing is the design; with two kids it strands one of them.) Two fixes, together: (1) the barriers open — already ruled in addendum 35; (2) **in the multiplayer modes where holes grow (Story and I Spy), growth is a TEAM stat**: the team has one shared size, and when any player eats, every player's hole grows together, in lockstep, capped by the shared ladder's cap applied to the team size. Nobody can be left behind too small again. Coins stay personal (each player banks what they earn — unchanged), upgrades stay personal, and Educational (sizes are fixed per set) and Exploration (sizes are free dials) are unaffected because size doesn't grow there. Solo play is unchanged: growth stays individual. (v5.3 batch.)
+
+**v5.15 addendum 37 (owner) — THE MULTIPLAYER PRINCIPLE: NO KID FALLS BEHIND** — confirming and generalizing addendum 36: multiplayer is designed so there is **no opportunity for one player to fall behind the others**. Shared growth (addendum 36), the shared ladder, the open world (addendum 35) and the team I Spy win (addendum 33) are all expressions of this one principle, and every future multiplayer mechanic is judged by it: if a design lets one kid end up smaller, weaker, shut out, or stuck while their friends advance, that design is a bug, not a feature. Coins and upgrade levels stay personal — they buy comfort, never access: with size shared, nothing a coin buys can gate where a player can go or what the team can do. (v5.3 batch.)
+
+**v5.15 addendum 38 (owner): I SPY IS A FIXED-SIZE HUNT** — the owner, restating what I Spy is for: a hand of I Spy is a set of items **all the same size**, and the hole plays the whole hand at **one set size — exactly the size that fits those items** ("they could just grow to that max size, that's it; they can't go beyond the size of the I Spy"). There is no growing inside a hand: eating other things still pays coins, but the size never moves during a hand. And because I Spy is educational, **upgrades are infinite in I Spy** (his words): no player's upgrade progress limits or differentiates them in this mode — everyone plays the hand on equal footing with nothing held back. Session-only, exactly like Exploration's sandbox: it writes nothing back to anyone's save or upgrade levels. This **supersedes the v5.0 objective-ladder treatment for I Spy** (the ladder still governs Story; Educational's pre-sized fixed-size sets already worked this way). Consequences for multiplayer: addendum 36's shared growth no longer needs to cover I Spy — I Spy has no growth to share; every player starts the hand at the same set size, identical, so no kid can fall behind in I Spy by construction. Different hands may be different sizes; within a hand, one size. This is the mode's design everywhere, solo included — not a multiplayer patch. (v5.3 batch.)
+
+**v5.15 addendum 39 (owner): EDUCATIONAL GETS THE SAME TREATMENT — FIXED SIZE (BIGGEST TARGET + 1), UNLIMITED UPGRADES, AND A SPEED DIAL** — Educational joins I Spy (addendum 38): a set plays at **one fixed size — the size of the biggest target the set needs, plus one step of headroom** — and the size never moves during the set and cannot be adjusted by anyone. **Upgrades are unlimited in Educational** too (session-only, equal footing, nothing writes back to saves): a kid can go super fast and fly around, which the Globe's scale demands. And because unlimited speed needs a leash, **Educational gains the player's own speed dial** — the same Adjust Speed control v5.2 Part 14 built for Exploration: speed is the player's to adjust mid-run; size is not. His reasoning for locking the size, and he is right: Globe animals stop appearing at the giant tiers (addendum 29), so if a set's size could drift up, a find-the-animal set's targets would vanish and the set would become impossible. Fixed at biggest+1 keeps every target visible and eatable. Educational sets on the Globe can be **animal hunts** (find these species, in their countries) — the datasets from addenda 29/30 feed them. This refines v4.9/v5.0 for Educational: no step-by-step growth inside a set; the set's single size is computed from its biggest target. Fallout: addendum 36's shared growth now covers **Story alone** — I Spy and Educational are fixed-size modes (addenda 38/39), equal for every player by construction. (v5.3 batch.)
+
+**v5.15 addendum 40 (owner): GLOBE ANIMALS MUST MOVE AND BE ANIMATED** — sharpening addendum 29: every animal placed on the Globe from his dataset must actually **move** — roam its country (or its coastal waters) as a living mover — and be **animated** while it does (gait / idle motion; a statue that slides across the ground, or a model that stands frozen, does not count). It stays ambience: eatable, respawning, unpersisted. Applies wherever dataset animals appear, including Educational animal hunts (addendum 39). Kakashi verifies this by direct observation during the v5.2 verification, not by suite results alone.
+
+**v5.15 addendum 41 (owner): NO VISITED-PLACES GLOW ON THE MINI GLOBE** — owner playtest note: on the Globe, areas he has already explored turn yellow on the map — "not necessary." The Globe chapter tracked a `seen` bitmap of where the hole had been and the mini globe mixed a gold glow into visited cells ("places you have been glow gold"). He rules it out: **the mini globe renders the Earth the same everywhere, visited or not.** The rest of the mini globe is unchanged (it turns under you; you are the pulsing dot; targets are stars). No other world had this glow. (v5.3 fix round 1.)
