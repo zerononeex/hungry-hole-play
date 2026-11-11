@@ -2,6 +2,6 @@
 
 This repo is a mirror only. It is never built here: the game is built in https://github.com/zerononeex/hungry-hole and copied over.
 
-**Currently mirrored:** the Stanley Park art test (branch `claude/hungry-hole-art-test`, commit 14b1d04, 2026-11-11), mirrored at the owner's request.
+**Currently mirrored:** `main` of zerononeex/hungry-hole at d1f65de (2026-11-11): v5.3 plus the Stanley Park art test.
 
 The game's own notes are in `docs/` (the upstream README is `docs/README-upstream.md`).
